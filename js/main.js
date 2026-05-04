@@ -14,7 +14,40 @@ var activeAdminChatUser = null;
 var selectedStars = 0;
 var selPayMethod = '';
 
-function hashPass(p){var h=0;for(var i=0;i<p.length;i++){h=((h<<5)-h)+p.charCodeAt(i);h|=0;}return h.toString(36);}
+// SHA-256 password hash (browser SubtleCrypto)
+async function hashPass(p){
+  var buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(p));
+  return Array.from(new Uint8Array(buf)).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
+}
+
+// XSS sanitizer — escapes all user-supplied strings before innerHTML
+function sanitize(str){
+  if(str===null||str===undefined)return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#x27;').replace(/\//g,'&#x2F;');
+}
+
+// Input validators
+function isValidEmail(e){return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);}
+function isValidLength(s,min,max){var l=s.trim().length;return l>=min&&l<=max;}
+
+// Login rate limiting (max 5 attempts per 10 min)
+var loginAttempts=JSON.parse(localStorage.getItem('ki_attempts')||'{"count":0,"ts":0}');
+function checkRateLimit(){
+  var now=Date.now();
+  if(now-loginAttempts.ts>600000){loginAttempts={count:0,ts:now};}
+  if(loginAttempts.count>=5){
+    var wait=Math.ceil((600000-(now-loginAttempts.ts))/60000);
+    document.getElementById('authErr').textContent='অনেক চেষ্টা হয়েছে। '+wait+' মিনিট পর আবার চেষ্টা করুন।';
+    return false;
+  }
+  return true;
+}
+function recordFailedAttempt(){
+  loginAttempts.count++;loginAttempts.ts=loginAttempts.ts||Date.now();
+  localStorage.setItem('ki_attempts',JSON.stringify(loginAttempts));
+}
+function resetAttempts(){loginAttempts={count:0,ts:0};localStorage.setItem('ki_attempts',JSON.stringify(loginAttempts));}
+
 function getTime(){var n=new Date();return n.getHours()+':'+String(n.getMinutes()).padStart(2,'0');}
 
 // ====== AUTH ======
@@ -27,24 +60,32 @@ function switchTab(t){
 }
 
 async function doLogin(){
+  if(!checkRateLimit())return;
   var e=document.getElementById('lEmail').value.trim();
   var p=document.getElementById('lPass').value;
   if(!e||!p){document.getElementById('authErr').textContent='Email ও Password দিন।';return;}
+  if(!isValidEmail(e)){document.getElementById('authErr').textContent='সঠিক Email দিন।';return;}
+  if(!isValidLength(p,6,128)){document.getElementById('authErr').textContent='Password কমপক্ষে ৬ অক্ষর।';return;}
+
+  var hashed=await hashPass(p);
 
   // Admin check
   var {data:adminRow}=await sb.from('admin_settings').select('value').eq('key','admin_pass').single();
-  var adminPass=adminRow?adminRow.value:hashPass('ki@2026#secure');
-  if(e===ADMIN_EMAIL&&hashPass(p)===adminPass){
+  var adminPass=adminRow?adminRow.value:await hashPass('ki@2026#secure');
+  if(e===ADMIN_EMAIL&&hashed===adminPass){
+    resetAttempts();
     currentUser={email:e,role:'admin',name:'Khairul Islam'};
     loginSuccess();return;
   }
 
   // User check
-  var {data:user,error}=await sb.from('users').select('*').eq('email',e).single();
-  if(user&&user.pass===p){
+  var {data:user}=await sb.from('users').select('*').eq('email',e).single();
+  if(user&&user.pass===hashed){
+    resetAttempts();
     currentUser={email:e,role:'user',name:user.name||e.split('@')[0]};
     loginSuccess();
   } else {
+    recordFailedAttempt();
     document.getElementById('authErr').textContent='Email বা Password ভুল।';
   }
 }
@@ -54,13 +95,16 @@ async function doSignup(){
   var e=document.getElementById('sEmail').value.trim();
   var p=document.getElementById('sPass').value;
   if(!name||!e||!p){document.getElementById('authErr').textContent='সব ফিল্ড পূরণ করুন।';return;}
-  if(p.length<6){document.getElementById('authErr').textContent='Password কমপক্ষে ৬ অক্ষর।';return;}
+  if(!isValidLength(name,2,50)){document.getElementById('authErr').textContent='নাম ২-৫০ অক্ষরের মধ্যে হতে হবে।';return;}
+  if(!isValidEmail(e)){document.getElementById('authErr').textContent='সঠিক Email দিন।';return;}
+  if(!isValidLength(p,6,128)){document.getElementById('authErr').textContent='Password কমপক্ষে ৬ অক্ষর।';return;}
   if(e===ADMIN_EMAIL){document.getElementById('authErr').textContent='এই email ব্যবহার করা যাবে না।';return;}
 
   var {data:existing}=await sb.from('users').select('id').eq('email',e).single();
   if(existing){document.getElementById('authErr').textContent='Email ইতিমধ্যে registered।';return;}
 
-  var {error}=await sb.from('users').insert({name,email:e,pass:p,phone:'',join_date:new Date().toLocaleDateString('bn-BD')});
+  var hashed=await hashPass(p);
+  var {error}=await sb.from('users').insert({name:sanitize(name),email:e,pass:hashed,phone:'',join_date:new Date().toLocaleDateString('bn-BD')});
   if(error){document.getElementById('authErr').textContent='Registration ব্যর্থ হয়েছে।';return;}
 
   currentUser={email:e,role:'user',name};
@@ -128,8 +172,8 @@ async function renderAdminReviews(){
   reviews=reviews||[];
   var el=document.getElementById('adminReviewList');if(!el)return;
   if(!reviews.length){el.innerHTML='<div style="font-size:12px;color:var(--muted);padding:10px;">কোনো review নেই।</div>';return;}
-  el.innerHTML=reviews.map(function(r,i){
-    return '<div class="bkrow"><div class="bkinfo"><div class="bk-user-txt">'+r.name+' ('+r.email+')</div><div class="bk-det">'+'★'.repeat(r.stars)+' — "'+r.text.substring(0,60)+'"</div></div><div class="bk-action-btns">'+(!r.approved?'<button class="confirm-btn" onclick="approveReview('+r.id+')">✓ Approve</button>':'<span style="color:var(--green);font-size:11px;">✓ Approved</span>')+'<button class="reject-btn" onclick="deleteReview('+r.id+')">Del</button></div></div>';
+  el.innerHTML=reviews.map(function(r){
+    return '<div class="bkrow"><div class="bkinfo"><div class="bk-user-txt">'+sanitize(r.name)+' ('+sanitize(r.email)+')</div><div class="bk-det">'+'★'.repeat(r.stars)+' — "'+sanitize(r.text.substring(0,60))+'"</div></div><div class="bk-action-btns">'+(!r.approved?'<button class="confirm-btn" onclick="approveReview('+r.id+')">✓ Approve</button>':'<span style="color:var(--green);font-size:11px;">✓ Approved</span>')+'<button class="reject-btn" onclick="deleteReview('+r.id+')">Del</button></div></div>';
   }).join('');
 }
 
@@ -159,21 +203,21 @@ async function renderAdminContent(){
   // Users list
   var ul=document.getElementById('adminUserList');
   ul.innerHTML='<div class="user-row"><span class="user-email-txt">'+ADMIN_EMAIL+'</span><span class="role-badge admin">Admin</span></div>';
-  users.forEach(function(u){ul.innerHTML+='<div class="user-row"><div><div class="user-email-txt">'+u.email+'</div><div style="font-size:10px;color:var(--muted);">'+u.name+'</div></div><div style="display:flex;gap:6px;align-items:center;"><span class="role-badge user">User</span><button class="del-btn" onclick="delUser(\''+u.id+'\')">Del</button></div></div>';});
+  users.forEach(function(u){ul.innerHTML+='<div class="user-row"><div><div class="user-email-txt">'+sanitize(u.email)+'</div><div style="font-size:10px;color:var(--muted);">'+sanitize(u.name)+'</div></div><div style="display:flex;gap:6px;align-items:center;"><span class="role-badge user">User</span><button class="del-btn" onclick="delUser(\''+sanitize(u.id)+'\')">Del</button></div></div>';});
 
   // Bookings
   var bl=document.getElementById('adminBookingList');
   if(!bookings.length){bl.innerHTML='<div style="font-size:12px;color:var(--muted);padding:10px;">কোনো booking নেই।</div>';}
-  else{bl.innerHTML=bookings.map(function(b){return '<div class="booking-admin-row"><div class="bk-info"><div class="bk-user">'+b.email+'</div><div class="bk-detail">'+b.service+' · '+b.date+' '+b.slot+'</div></div><div class="bk-action-btns"><span class="bk-status '+b.status+'">'+b.status+'</span>'+(b.status==='pending'?'<button class="confirm-btn" onclick="updateBooking('+b.id+',\'confirmed\')">✓</button><button class="reject-btn" onclick="updateBooking('+b.id+',\'cancelled\')">✗</button>':'')+'</div></div>';}).join('');}
+  else{bl.innerHTML=bookings.map(function(b){return '<div class="booking-admin-row"><div class="bk-info"><div class="bk-user">'+sanitize(b.email)+'</div><div class="bk-detail">'+sanitize(b.service)+' · '+sanitize(b.date)+' '+sanitize(b.slot)+'</div></div><div class="bk-action-btns"><span class="bk-status '+sanitize(b.status)+'">'+sanitize(b.status)+'</span>'+(b.status==='pending'?'<button class="confirm-btn" onclick="updateBooking('+b.id+',\'confirmed\')">✓</button><button class="reject-btn" onclick="updateBooking('+b.id+',\'cancelled\')">✗</button>':'')+'</div></div>';}).join('');}
 
   // Videos
   var vl=document.getElementById('adminVideoList');
-  vl.innerHTML=videos.map(function(v){return '<div class="vla-item"><div><div class="vla-title">'+v.title+'</div><div class="vla-url">'+v.access+' · '+v.url.substring(0,35)+'</div></div><button class="del-btn" onclick="delVideo('+v.id+')">Del</button></div>';}).join('')||'<div style="font-size:11px;color:var(--muted);padding:8px;">কোনো ভিডিও নেই।</div>';
+  vl.innerHTML=videos.map(function(v){return '<div class="vla-item"><div><div class="vla-title">'+sanitize(v.title)+'</div><div class="vla-url">'+sanitize(v.access)+'</div></div><button class="del-btn" onclick="delVideo('+v.id+')">Del</button></div>';}).join('')||'<div style="font-size:11px;color:var(--muted);padding:8px;">কোনো ভিডিও নেই।</div>';
 
   // Chats
   var cl=document.getElementById('adminChatList');
   if(!chatUsers.length){cl.innerHTML='<div style="font-size:12px;color:var(--muted);">কোনো message নেই।</div>';}
-  else{cl.innerHTML=chatUsers.map(function(email){return '<div class="admin-chat-item"'+(activeAdminChatUser===email?' style="border-color:var(--cyan);"':'')+' onclick="selectAdminChat(\''+email+'\')"><div class="aci-email">'+email+'</div><div class="aci-preview">Click to view messages</div></div>';}).join('');}
+  else{cl.innerHTML=chatUsers.map(function(email){return '<div class="admin-chat-item"'+(activeAdminChatUser===email?' style="border-color:var(--cyan);"':'')+' onclick="selectAdminChat(\''+sanitize(email)+'\')"><div class="aci-email">'+sanitize(email)+'</div><div class="aci-preview">Click to view messages</div></div>';}).join('');}
 
   // Settings
   if(settings){
@@ -191,7 +235,7 @@ function selectAdminChat(email){
 
 async function sendAdminReply(){
   if(!activeAdminChatUser)return;
-  var txt=document.getElementById('adminReplyInput').value.trim();
+  var txt=document.getElementById('adminReplyInput').value.trim().substring(0,1000);
   if(!txt)return;
   await sb.from('chats').insert({user_email:activeAdminChatUser,from_role:'admin',message:txt,time:getTime()});
   document.getElementById('adminReplyInput').value='';
@@ -230,7 +274,7 @@ async function delVideo(id){
 async function changeAdminPass(){
   var np=document.getElementById('newAdminPass').value;
   if(!np||np.length<8){alert('কমপক্ষে ৮ অক্ষর দিন।');return;}
-  await sb.from('admin_settings').upsert({key:'admin_pass',value:hashPass(np)});
+  await sb.from('admin_settings').upsert({key:'admin_pass',value:await hashPass(np)});
   document.getElementById('newAdminPass').value='';
   alert('✅ Password updated!');
 }
@@ -289,12 +333,15 @@ async function saveProfile(){
   var name=document.getElementById('editName').value.trim();
   var phone=document.getElementById('editPhone').value.trim();
   var pass=document.getElementById('editPass').value;
+  if(name&&!isValidLength(name,2,50)){alert('নাম ২-৫০ অক্ষরের মধ্যে হতে হবে।');return;}
+  if(phone&&!isValidLength(phone,0,20)){alert('Phone নম্বর ২০ অক্ষরের বেশি হবে না।');return;}
+  if(pass&&!isValidLength(pass,6,128)){alert('Password কমপক্ষে ৬ অক্ষর।');return;}
   var update={};
   if(name)update.name=name;
   if(phone)update.phone=phone;
-  if(pass&&pass.length>=6)update.pass=pass;
+  if(pass&&pass.length>=6)update.pass=await hashPass(pass);
   await sb.from('users').update(update).eq('email',currentUser.email);
-  if(name){currentUser.name=name;document.getElementById('profileName').textContent=name;}
+  if(name){currentUser.name=name;document.getElementById('profileName').textContent=sanitize(name);}
   alert('Profile updated!');
 }
 
@@ -302,7 +349,7 @@ async function renderMyBookings(){
   var {data:myBk}=await sb.from('bookings').select('*').eq('email',currentUser.email).order('created_at',{ascending:false});
   var el=document.getElementById('myBookingsList');
   if(!(myBk&&myBk.length)){el.innerHTML='<div style="font-size:12px;color:var(--muted);padding:12px;">কোনো booking নেই। <a href="#booking" onclick="closeDashboard()" style="color:var(--cyan);">Book করুন →</a></div>';return;}
-  el.innerHTML=myBk.map(function(b){return '<div class="booking-row"><div><div class="bk-service">'+b.service+'</div><div class="bk-date">'+b.date+' · '+b.slot+'</div></div><span class="bk-status '+b.status+'">'+b.status+'</span></div>';}).join('');
+  el.innerHTML=myBk.map(function(b){return '<div class="booking-row"><div><div class="bk-service">'+sanitize(b.service)+'</div><div class="bk-date">'+sanitize(b.date)+' · '+sanitize(b.slot)+'</div></div><span class="bk-status '+sanitize(b.status)+'">'+sanitize(b.status)+'</span></div>';}).join('');
 }
 
 async function renderPrivateChat(){
@@ -310,14 +357,14 @@ async function renderPrivateChat(){
   var {data:msgs}=await sb.from('chats').select('*').eq('user_email',currentUser.email).order('created_at',{ascending:true});
   var el=document.getElementById('privateChatMsgs');
   if(!(msgs&&msgs.length)){el.innerHTML='<div style="font-size:12px;color:var(--muted);padding:12px;text-align:center;">Khairul Islam-এর সাথে chat শুরু করুন।</div>';return;}
-  el.innerHTML=msgs.map(function(m){return '<div class="pchat-msg '+(m.from_role==='admin'?'admin':'user')+'"><div class="pchat-bubble">'+m.message+'</div><div class="pchat-time">'+m.time+'</div></div>';}).join('');
+  el.innerHTML=msgs.map(function(m){return '<div class="pchat-msg '+(m.from_role==='admin'?'admin':'user')+'"><div class="pchat-bubble">'+sanitize(m.message)+'</div><div class="pchat-time">'+sanitize(m.time)+'</div></div>';}).join('');
   el.scrollTop=el.scrollHeight;
 }
 
 async function sendPrivateMsg(){
   if(!currentUser||currentUser.role==='guest')return;
   var inp=document.getElementById('privateChatInput');
-  var txt=inp.value.trim();if(!txt)return;
+  var txt=inp.value.trim().substring(0,1000);if(!txt)return;
   await sb.from('chats').insert({user_email:currentUser.email,from_role:'user',message:txt,time:getTime()});
   inp.value='';renderPrivateChat();
 }
@@ -330,7 +377,7 @@ async function renderNotifications(){
     sb.from('chats').select('*').eq('user_email',currentUser.email).eq('from_role','admin'),
     sb.from('settings').select('announcement').eq('id',1).single()
   ]);
-  if(myBk&&myBk.length){myBk.forEach(function(b){notes.push({ic:'📅',txt:'Booking: <strong>'+b.service+'</strong> — Status: <span style="color:'+(b.status==='confirmed'?'var(--green)':b.status==='cancelled'?'var(--red)':'var(--gold)')+'">'+b.status+'</span>',time:b.date});});}
+  if(myBk&&myBk.length){myBk.forEach(function(b){notes.push({ic:'📅',txt:'Booking: <strong>'+sanitize(b.service)+'</strong> — Status: <span style="color:'+(b.status==='confirmed'?'var(--green)':b.status==='cancelled'?'var(--red)':'var(--gold)')+'">'+sanitize(b.status)+'</span>',time:sanitize(b.date)});});}
   if(adminMsgs&&adminMsgs.length){notes.push({ic:'💬',txt:'Khairul Islam-এর <strong>'+adminMsgs.length+'টি</strong> reply আছে।',time:'Recently'});}
   if(settings&&settings.announcement){notes.push({ic:'📢',txt:'<strong>Announcement:</strong> '+settings.announcement,time:'Admin'});}
   if(!notes.length){el.innerHTML='<div style="font-size:12px;color:var(--muted);padding:14px;">কোনো notification নেই।</div>';return;}
@@ -375,8 +422,10 @@ async function submitBooking(){
   if(!selectedService){showToast('wrn','⚠️','Service বেছে নিন।');return;}
   var date=document.getElementById('bookDate').value;
   if(!date){showToast('wrn','⚠️','Date দিন।');return;}
+  // Prevent past dates
+  if(date<new Date().toISOString().split('T')[0]){showToast('wrn','⚠️','ভবিষ্যতের date দিন।');return;}
   if(!selectedSlot){showToast('wrn','⚠️','Time slot বেছে নিন।');return;}
-  var msg=document.getElementById('bookMsg').value;
+  var msg=document.getElementById('bookMsg').value.substring(0,500); // limit message
   var bkId=Date.now();
   var {error}=await sb.from('bookings').insert({id:bkId,email:currentUser.email,name:currentUser.name,service:selectedService,date,slot:selectedSlot,msg,status:'pending',payment:'unpaid'});
   if(error){showToast('wrn','⚠️','Booking ব্যর্থ হয়েছে।');return;}
@@ -389,8 +438,9 @@ async function submitPayment(){
   if(!selPayMethod){showToast('wrn','⚠️','Payment method বেছে নিন।');return;}
   var trx=document.getElementById('trxId').value.trim();
   var amt=document.getElementById('trxAmt').value.trim();
-  if(!trx){showToast('wrn','⚠️','Transaction ID দিন।');return;}
-  if(!amt){showToast('wrn','⚠️','Amount দিন।');return;}
+  if(!trx||trx.length<6||trx.length>30||!/^[A-Za-z0-9]+$/.test(trx)){showToast('wrn','⚠️','সঠিক Transaction ID দিন (৬-৩০ alphanumeric)।');return;}
+  var amtNum=parseFloat(amt);
+  if(!amt||isNaN(amtNum)||amtNum<=0||amtNum>500000){showToast('wrn','⚠️','সঠিক Amount দিন।');return;}
   var {data:lastBk}=await sb.from('bookings').select('id').eq('email',currentUser.email).order('created_at',{ascending:false}).limit(1).single();
   if(lastBk){await sb.from('bookings').update({payment:'paid',trx_id:trx,trx_amt:amt,pay_method:selPayMethod}).eq('id',lastBk.id);}
   showToast('ok','✅','Payment জমা হয়েছে! Admin verify করবেন।');
@@ -417,7 +467,7 @@ async function renderRecentBookings(){
   if(!el)return;
   var {data:myBk}=await sb.from('bookings').select('*').eq('email',currentUser.email).order('created_at',{ascending:false}).limit(3);
   if(!(myBk&&myBk.length)){el.innerHTML='<div style="font-size:12px;color:var(--muted);padding:8px;">কোনো booking নেই।</div>';return;}
-  el.innerHTML=myBk.map(function(b){return '<div class="booking-row"><div><div class="bk-service">'+b.service+'</div><div class="bk-date">'+b.date+' · '+b.slot+'</div></div><span class="bk-status '+b.status+'">'+b.status+'</span></div>';}).join('');
+  el.innerHTML=myBk.map(function(b){return '<div class="booking-row"><div><div class="bk-service">'+sanitize(b.service)+'</div><div class="bk-date">'+sanitize(b.date)+' · '+sanitize(b.slot)+'</div></div><span class="bk-status '+sanitize(b.status)+'">'+sanitize(b.status)+'</span></div>';}).join('');
 }
 function scrollToBooking(){document.getElementById('booking').scrollIntoView({behavior:'smooth'});}
 
@@ -447,7 +497,7 @@ async function renderVideoGrid(){
   if(!isLoggedIn)query=query.eq('access','public');
   var {data:videos}=await query;
   if(!(videos&&videos.length)){el.innerHTML='<div class="no-vids">🎬 এখনো কোনো ভিডিও নেই।</div>';return;}
-  el.innerHTML=videos.map(function(v){return '<div class="vid-card"><div class="vid-thumb"><iframe src="'+v.url+'" allowfullscreen loading="lazy"></iframe></div><div class="vid-body"><div class="vid-title">'+v.title+'</div><div class="vid-desc">'+v.description+'</div></div></div>';}).join('');
+  el.innerHTML=videos.map(function(v){return '<div class="vid-card"><div class="vid-thumb"><iframe src="'+sanitize(v.url)+'" allowfullscreen loading="lazy"></iframe></div><div class="vid-body"><div class="vid-title">'+sanitize(v.title)+'</div><div class="vid-desc">'+sanitize(v.description)+'</div></div></div>';}).join('');
 }
 
 // ====== SETTINGS ======
@@ -471,7 +521,11 @@ function applyAnnouncement(txt){
 function submitContact(){
   var name=document.getElementById('ctName').value.trim();
   var email=document.getElementById('ctEmail').value.trim();
+  var msg=document.getElementById('ctMsg').value.trim();
   if(!name||!email){alert('নাম ও email দিন।');return;}
+  if(!isValidEmail(email)){alert('সঠিক email দিন।');return;}
+  if(!isValidLength(name,2,50)){alert('নাম ২-৫০ অক্ষরের মধ্যে হতে হবে।');return;}
+  if(msg&&msg.length>2000){alert('Message ২০০০ অক্ষরের বেশি হবে না।');return;}
   alert('✅ বার্তা পাঠানো হয়েছে! শীঘ্রই যোগাযোগ করা হবে।');
   ['ctName','ctEmail','ctBudget','ctSubject','ctMsg'].forEach(function(id){document.getElementById(id).value='';});
 }
@@ -627,7 +681,7 @@ async function renderUserReviews(filter){
   if(!reviews.length){el.innerHTML='<div style="font-size:12px;color:var(--muted);padding:10px;text-align:center;font-family:DM Mono,monospace;">কোনো review নেই।</div>';return;}
   el.innerHTML=reviews.map(function(r){
     var stars='★'.repeat(r.stars)+'☆'.repeat(5-r.stars);
-    return '<div class="urev"><div class="urev-hd"><div class="urev-auth"><div class="urev-av">'+r.name[0].toUpperCase()+'</div><div><div class="urev-name">'+r.name+'</div><div class="urev-date">'+r.date+'</div></div></div>'+(isAdmin?'<button class="urev-del" onclick="deleteReview('+r.id+')">Del</button>':'')+'</div><div class="urev-stars">'+stars+'</div><div class="urev-txt">"'+r.text+'"</div>'+(!r.approved?'<span class="urev-pending">// Pending approval</span>':'')+'</div>';
+    return '<div class="urev"><div class="urev-hd"><div class="urev-auth"><div class="urev-av">'+sanitize(r.name[0].toUpperCase())+'</div><div><div class="urev-name">'+sanitize(r.name)+'</div><div class="urev-date">'+sanitize(r.date)+'</div></div></div>'+(isAdmin?'<button class="urev-del" onclick="deleteReview('+r.id+')">Del</button>':'')+'</div><div class="urev-stars">'+stars+'</div><div class="urev-txt">"'+sanitize(r.text)+'"</div>'+(!r.approved?'<span class="urev-pending">// Pending approval</span>':'')+'</div>';
   }).join('');
 }
 
@@ -646,7 +700,7 @@ async function updateRevStats(){
 
 async function submitReview(){
   if(!selectedStars){showToast('wrn','⚠️','Stars দিন।');return;}
-  var txt=document.getElementById('revTxt').value.trim();
+  var txt=document.getElementById('revTxt').value.trim().substring(0,1000);
   if(!txt||txt.length<10){showToast('wrn','⚠️','কমপক্ষে ১০ অক্ষর লিখুন।');return;}
   var {error}=await sb.from('reviews').insert({id:Date.now(),email:currentUser.email,name:currentUser.name||currentUser.email.split('@')[0],stars:selectedStars,text:txt,date:new Date().toLocaleDateString('bn-BD'),approved:false});
   if(error){showToast('wrn','⚠️','Review জমা ব্যর্থ হয়েছে।');return;}
