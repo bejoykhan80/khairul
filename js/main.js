@@ -640,8 +640,6 @@ function initSite(){
 }
 
 // ====== AI CHATBOT ======
-var GEMINI_KEY='AIzaSyC964E5uJfmPW7F1MlON6GZkZHTD8rWwlQ';
-var SYS='তুমি Khairul Islam-এর AI assistant। তথ্য: Ethical Hacker & Web Developer, ২০১৯ থেকে কাজ করছেন, Dhaka। CEH v12, OSCP, CompTIA Security+, eJPT, AWS Security, PNPT সার্টিফাইড। Services: Pen Testing(৳১৫,০০০+), Web Dev(৳২০,০০০+), Security Audit(৳১০,০০০+), Bug Bounty, Training(৳৫,০০০/hr), OSINT(৳৮,০০০)। Pricing: Starter ৳৯,৯০০, Professional ৳১৫,০০০, Enterprise Custom। Telegram: https://t.me/Khairul_i, Email: khairul.cyber@proton.me, GitHub: https://github.com/bejoykhan80, Bugcrowd: https://bugcrowd.com/h/khairulislam5b75f040-4d84-4921-bd5a-8fdfbbb59ba7। বাংলায় লিখলে বাংলায়, English-এ লিখলে English-এ উত্তর দাও। সংক্ষিপ্ত উত্তর দাও।';
 var isAILoading=false;
 
 function toggleChat(){chatOpen=!chatOpen;document.getElementById('chatWin').style.display=chatOpen?'block':'none';document.getElementById('chatNotif').style.display='none';}
@@ -659,24 +657,26 @@ function showAITyping(){
 }
 async function sendChat(){
   if(isAILoading)return;
-  var inp=document.getElementById('chatIn'),txt=inp.value.trim();if(!txt)return;
+  var inp=document.getElementById('chatIn');
+  var txt=inp.value.trim().substring(0,2000);if(!txt)return;
   addChatMsg('user',txt);inp.value='';
   isAILoading=true;document.getElementById('chatSndBtn').disabled=true;showAITyping();
   try{
-    var url='https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key='+GEMINI_KEY;
-    var msgs=[];
-    if(chatHistory.length===0){msgs.push({role:'user',parts:[{text:SYS+'\n\nUser: '+txt}]});}
-    else{msgs.push({role:'user',parts:[{text:SYS}]});msgs.push({role:'model',parts:[{text:'বুঝেছি, আমি Khairul Islam-এর AI assistant হিসেবে সাহায্য করব।'}]});chatHistory.forEach(function(m){msgs.push(m);});msgs.push({role:'user',parts:[{text:txt}]});}
-    chatHistory.push({role:'user',parts:[{text:txt}]});
-    var r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:msgs})});
+    // Call server-side proxy — GEMINI_KEY stays on the server
+    var r=await fetch('/api/chat',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({txt:txt,history:chatHistory.slice()})
+    });
     var data=await r.json();
     var te=document.getElementById('aityping');if(te)te.remove();
     var reply='দুঃখিত। <a class="cmsg-link" href="https://t.me/Khairul_i" target="_blank">Telegram-এ যোগাযোগ করুন</a>';
     if(data.candidates&&data.candidates[0]&&data.candidates[0].content&&data.candidates[0].content.parts){
-      reply=data.candidates[0].content.parts[0].text;
-      chatHistory.push({role:'model',parts:[{text:reply}]});
+      var rawReply=data.candidates[0].content.parts[0].text;
+      chatHistory.push({role:'user',parts:[{text:txt}]});
+      chatHistory.push({role:'model',parts:[{text:rawReply}]});
+      reply=rawReply.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\*/g,'').replace(/\n/g,'<br>').replace(/(https?:\/\/[^\s<"]+)/g,'<a class="cmsg-link" href="$1" target="_blank">$1</a>');
     }
-    reply=reply.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\*/g,'').replace(/\n/g,'<br>').replace(/(https?:\/\/[^\s<"]+)/g,'<a class="cmsg-link" href="$1" target="_blank">$1</a>');
     addChatMsg('bot',reply);
   }catch(e){
     var te=document.getElementById('aityping');if(te)te.remove();
@@ -809,11 +809,9 @@ function showToast(type,ic,msg,duration){
 }
 
 // ====== TELEGRAM ======
-var TG_BOT_TOKEN='YOUR_BOT_TOKEN';
-var TG_CHAT_ID='YOUR_CHAT_ID';
 function sendTelegramNotify(msg){
-  if(TG_BOT_TOKEN==='YOUR_BOT_TOKEN')return;
-  fetch('https://api.telegram.org/bot'+TG_BOT_TOKEN+'/sendMessage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:TG_CHAT_ID,text:'🔔 KI Portfolio\n\n'+msg})}).catch(function(){});
+  // Call server-side proxy — TG_BOT_TOKEN stays on the server
+  fetch('/api/notify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:msg})}).catch(function(){});
 }
 
 function qm(txt){document.getElementById('chatIn').value=txt;sendChat();}
