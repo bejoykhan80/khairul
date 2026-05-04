@@ -1,10 +1,21 @@
-// ====== SUPABASE INIT ======
-const SUPA_URL = 'https://fhmtuzyehpfwwifbqddp.supabase.co';
-const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZobXR1enkelZnBmd3dpZmJxZGRwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5MTE4NjYsImV4cCI6MjA5MzQ4Nzg2Nn0.WYh3JDT1eyNpFXsfdw5MIBcAjuBMwWNrehOl8RGglBI';
-const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
+// ====== CONFIG — all credentials fetched from server, zero secrets in source ======
+var sb = null;
+var ADMIN_EMAIL = '';
+var _configReady = (async function loadConfig(){
+  try {
+    var r = await fetch('/api/config');
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    var c = await r.json();
+    if(!c.supaUrl || !c.supaKey) throw new Error('Incomplete config');
+    sb = supabase.createClient(c.supaUrl, c.supaKey);
+    ADMIN_EMAIL = c.adminEmail;
+  } catch(e) {
+    var errEl = document.getElementById('authErr');
+    if(errEl) errEl.textContent = 'সাইট লোড হয়নি। Page refresh করুন।';
+  }
+})();
 
 // ====== CONSTANTS ======
-var ADMIN_EMAIL = 'khairul.cyber@proton.me';
 var currentUser = null;
 var chatHistory = [];
 var chatOpen = false;
@@ -62,6 +73,8 @@ function switchTab(t){
 }
 
 async function doLogin(){
+  await _configReady;
+  if(!sb){document.getElementById('authErr').textContent='সাইট লোড হয়নি। Page refresh করুন।';return;}
   if(!checkRateLimit())return;
   var btn=document.getElementById('loginBtn');
   if(btn.disabled)return;
@@ -110,6 +123,8 @@ async function doLogin(){
 }
 
 async function doSignup(){
+  await _configReady;
+  if(!sb){document.getElementById('authErr').textContent='সাইট লোড হয়নি। Page refresh করুন।';return;}
   var btn=document.getElementById('signupBtn');
   if(btn.disabled)return;
 
@@ -163,7 +178,8 @@ function loginSuccess(){
   initSite();
 }
 
-function skipAuth(){
+async function skipAuth(){
+  await _configReady;
   currentUser={email:'guest',role:'guest',name:'Guest'};
   document.getElementById('authOverlay').style.display='none';
   document.getElementById('mainSite').style.display='block';
