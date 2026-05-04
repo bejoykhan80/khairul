@@ -1,0 +1,10 @@
+# Supabase temp files
+supabase/.temp/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+*.swp

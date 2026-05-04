@@ -1,0 +1,597 @@
+﻿<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Khairul Islam — Ethical Hacker & Web Developer</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- ======= AUTH OVERLAY ======= -->
+<div class="overlay" id="authOverlay">
+  <div class="modal-box">
+    <div class="modal-logo">KI.</div>
+    <div class="modal-sub">// Khairul Islam · Portfolio</div>
+    <div class="auth-tabs">
+      <div class="auth-tab active" id="lTab" onclick="switchTab('l')">Login</div>
+      <div class="auth-tab" id="sTab" onclick="switchTab('s')">Sign Up</div>
+    </div>
+    <div id="lForm">
+      <div class="form-field"><label>Email</label><input type="email" id="lEmail" placeholder="your@email.com" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+      <div class="form-field"><label>Password</label><input type="password" id="lPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+      <button class="btn-primary" onclick="doLogin()">Login →</button>
+    </div>
+    <div id="sForm" style="display:none;">
+      <div class="form-field"><label>Name</label><input type="text" id="sName" placeholder="তোমার নাম"/></div>
+      <div class="form-field"><label>Email</label><input type="email" id="sEmail" placeholder="your@email.com"/></div>
+      <div class="form-field"><label>Password</label><input type="password" id="sPass" placeholder="Min 6 characters"/></div>
+      <button class="btn-primary" onclick="doSignup()">Create Account →</button>
+    </div>
+    <div class="form-err" id="authErr"></div>
+    <div class="skip-link" onclick="skipAuth()">// Guest হিসেবে দেখুন →</div>
+  </div>
+</div>
+
+<!-- ======= TOP BAR ======= -->
+<div id="topBar">
+  <div class="tb-left">// <span id="tbEmail">guest</span></div>
+  <div class="tb-right">
+    <button class="tb-btn admin" id="adminBtn" onclick="openAdmin()" style="display:none;">⚙ Admin</button>
+    <button class="tb-btn dashboard" id="dashBtn" onclick="openDashboard()" style="display:none;">👤 Dashboard</button>
+    <button class="tb-btn logout" onclick="doLogout()">Logout</button>
+  </div>
+</div>
+
+<!-- ======= ADMIN MODAL ======= -->
+<div class="overlay" id="adminOverlay" style="display:none;">
+  <div class="admin-box">
+    <div class="admin-head">
+      <div class="admin-title">⚙️ Admin Dashboard</div>
+      <div class="modal-close" onclick="closeAdmin()">✕</div>
+    </div>
+    <div class="admin-tabs">
+      <div class="admin-tab active" onclick="switchAdminTab('stats')">📊 Stats</div>
+      <div class="admin-tab" onclick="switchAdminTab('users')">👥 Users</div>
+      <div class="admin-tab" onclick="switchAdminTab('bookings')">📅 Bookings</div>
+      <div class="admin-tab" onclick="switchAdminTab('videos')">🎬 Videos</div>
+      <div class="admin-tab" onclick="switchAdminTab('reviews')">⭐ Reviews</div>
+      <div class="admin-tab" onclick="switchAdminTab('chats')">💬 Chats</div>
+      <div class="admin-tab" onclick="switchAdminTab('settings')">⚙️ Settings</div>
+    </div>
+    <div class="admin-body">
+      <div class="admin-panel active" id="ap-stats">
+        <div class="admin-grid2">
+          <div class="admin-card">
+            <div class="admin-card-title">📊 Site Statistics</div>
+            <div class="astat"><span class="astat-k">Total Users</span><span class="astat-v" id="as-users">0</span></div>
+            <div class="astat"><span class="astat-k">Total Bookings</span><span class="astat-v" id="as-bookings">0</span></div>
+            <div class="astat"><span class="astat-k">Pending Bookings</span><span class="astat-v" id="as-pending">0</span></div>
+            <div class="astat"><span class="astat-k">Videos Added</span><span class="astat-v" id="as-videos">0</span></div>
+            <div class="astat"><span class="astat-k">Chat Conversations</span><span class="astat-v" id="as-chats">0</span></div>
+          </div>
+          <div class="admin-card">
+            <div class="admin-card-title">🔑 Admin Credentials</div>
+            <div class="astat"><span class="astat-k">Email</span><span class="astat-v" id="showAdminEmail"></span></div>
+            <div class="astat"><span class="astat-k">Password</span><span class="astat-v" style="color:var(--green);">●●●●●●●● (hidden)</span></div>
+            <div class="astat"><span class="astat-k">Role</span><span class="astat-v">Super Admin</span></div>
+            <div style="margin-top:12px;">
+              <div class="form-field"><label>New Admin Password</label><input type="password" id="newAdminPass" placeholder="নতুন পাসওয়ার্ড"/></div>
+              <button class="btn-outline" style="width:auto;padding:7px 14px;" onclick="changeAdminPass()">Update Password</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="admin-panel" id="ap-users">
+        <div class="admin-card">
+          <div class="admin-card-title">👥 Registered Users</div>
+          <div id="adminUserList"></div>
+        </div>
+      </div>
+      <div class="admin-panel" id="ap-bookings">
+        <div class="admin-card">
+          <div class="admin-card-title">📅 All Bookings</div>
+          <div id="adminBookingList"></div>
+        </div>
+      </div>
+      <div class="admin-panel" id="ap-videos">
+        <div class="admin-card">
+          <div class="admin-card-title">🎬 Add Video Content</div>
+          <div class="form-field"><label>Title</label><input type="text" id="vTitle" placeholder="ভিডিও টাইটেল"/></div>
+          <div class="form-field"><label>YouTube URL</label><input type="text" id="vUrl" placeholder="https://youtube.com/watch?v=... অথবা embed URL"/></div>
+          <div class="form-field"><label>Description</label><textarea id="vDesc" placeholder="সংক্ষিপ্ত বিবরণ..." style="min-height:60px;"></textarea></div>
+          <div class="form-field">
+            <label>Access</label>
+            <select id="vAccess" style="background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:10px;border-radius:4px;width:100%;outline:none;font-size:12px;">
+              <option value="public">🌐 সবার জন্য (Public)</option>
+              <option value="members">🔐 Logged-in Members Only</option>
+            </select>
+          </div>
+          <button class="btn-primary" onclick="addVideo()">+ ভিডিও যোগ করুন</button>
+          <div class="video-list-admin" id="adminVideoList"></div>
+        </div>
+      </div>
+      <div class="admin-panel" id="ap-reviews">
+        <div class="admin-card">
+          <div class="admin-card-title">⭐ Pending Reviews — Approve করো</div>
+          <div id="adminReviewList"></div>
+        </div>
+      </div>
+      <div class="admin-panel" id="ap-chats">
+        <div class="admin-card">
+          <div class="admin-card-title">💬 User Messages</div>
+          <div class="admin-chat-list" id="adminChatList"></div>
+          <div class="admin-chat-reply" id="adminChatReply" style="display:none;">
+            <div style="font-size:11px;color:var(--cyan);margin-bottom:8px;font-family:'DM Mono',monospace;" id="replyingTo"></div>
+            <div style="display:flex;gap:7px;">
+              <input class="pchat-input" id="adminReplyInput" placeholder="Reply লিখুন..." onkeydown="if(event.key==='Enter')sendAdminReply()"/>
+              <button class="pchat-send" onclick="sendAdminReply()">➤</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="admin-panel" id="ap-settings">
+        <div class="admin-grid2">
+          <div class="admin-card">
+            <div class="admin-card-title">⚙️ Site Settings</div>
+            <div class="form-field"><label>Availability</label>
+              <select id="setStatus" style="background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:10px;border-radius:4px;width:100%;outline:none;font-size:12px;">
+                <option value="available">✅ Available</option>
+                <option value="busy">🔴 Busy</option>
+                <option value="partial">🟡 Partially Available</option>
+              </select>
+            </div>
+            <div class="form-field"><label>Professional Title</label><input type="text" id="setTitle" placeholder="Ethical Hacker & Developer"/></div>
+            <button class="btn-primary" onclick="saveSettings()">Save Settings</button>
+          </div>
+          <div class="admin-card">
+            <div class="admin-card-title">📢 Announcement</div>
+            <div class="form-field"><label>Message (shown to all users)</label><textarea id="announcement" placeholder="কোনো ঘোষণা থাকলে লিখুন..."></textarea></div>
+            <button class="btn-gold" onclick="saveAnnouncement()">Post Announcement</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ======= USER DASHBOARD MODAL ======= -->
+<div class="overlay" id="dashOverlay" style="display:none;">
+  <div class="dashboard-box">
+    <div class="db-head">
+      <div class="db-title">👤 My Dashboard</div>
+      <div class="modal-close" onclick="closeDashboard()">✕</div>
+    </div>
+    <div class="db-tabs">
+      <div class="db-tab active" onclick="switchDbTab('profile')">Profile</div>
+      <div class="db-tab" onclick="switchDbTab('bookings')">My Bookings</div>
+      <div class="db-tab" onclick="switchDbTab('messages')">Messages</div>
+      <div class="db-tab" onclick="switchDbTab('notifications')">Notifications</div>
+    </div>
+    <div class="db-body">
+      <div class="db-panel active" id="dp-profile">
+        <div class="profile-header">
+          <div class="profile-av" id="profileAv">K</div>
+          <div>
+            <div class="profile-name" id="profileName">User</div>
+            <div class="profile-email" id="profileEmail">user@email.com</div>
+            <div><span class="profile-role-badge role-user" id="profileRole">Member</span></div>
+          </div>
+        </div>
+        <div class="profile-grid">
+          <div class="profile-stat"><div class="profile-stat-num" id="ps-bookings">0</div><div class="profile-stat-lbl">Bookings</div></div>
+          <div class="profile-stat"><div class="profile-stat-num" id="ps-messages">0</div><div class="profile-stat-lbl">Messages</div></div>
+        </div>
+        <div class="admin-card" style="margin-top:12px;">
+          <div class="admin-card-title">✏️ Edit Profile</div>
+          <div class="form-field"><label>Name</label><input type="text" id="editName" placeholder="তোমার নাম"/></div>
+          <div class="form-field"><label>Phone</label><input type="text" id="editPhone" placeholder="+880..."/></div>
+          <div class="form-field"><label>New Password</label><input type="password" id="editPass" placeholder="নতুন পাসওয়ার্ড (optional)"/></div>
+          <button class="btn-primary" onclick="saveProfile()">Save Profile</button>
+        </div>
+      </div>
+      <div class="db-panel" id="dp-bookings">
+        <div class="my-bookings">
+          <div class="mb-title">// My Bookings</div>
+          <div id="myBookingsList"></div>
+        </div>
+      </div>
+      <div class="db-panel" id="dp-messages">
+        <div class="pchat-admin-label"><span>💬 Khairul Islam-এর সাথে Private Chat</span><span style="color:var(--green);">● Online</span></div>
+        <div class="pchat-wrap">
+          <div class="pchat-msgs" id="privateChatMsgs"></div>
+          <div class="pchat-foot">
+            <input class="pchat-input" id="privateChatInput" placeholder="বার্তা লিখুন..." onkeydown="if(event.key==='Enter')sendPrivateMsg()"/>
+            <button class="pchat-send" onclick="sendPrivateMsg()">➤</button>
+          </div>
+        </div>
+      </div>
+      <div class="db-panel" id="dp-notifications">
+        <div id="notificationList"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ======= MAIN SITE ======= -->
+<div id="mainSite" style="display:none;">
+
+<nav class="nav" id="mainNav">
+  <div class="nav-logo">KI<span>.</span></div>
+  <div class="nav-links">
+    <a href="#about">About</a>
+    <a href="#exclusive">Members</a>
+    <a href="#videos">Videos</a>
+    <a href="#booking">Booking</a>
+    <a href="#services">Services</a>
+    <a href="#work">Work</a>
+    <a href="#contact">Contact</a>
+    <div class="toggle" onclick="toggleTheme()"><div class="tdot"></div></div>
+  </div>
+  <div class="hire" onclick="window.open('https://t.me/Khairul_i','_blank')">Hire Me</div>
+</nav>
+
+<!-- ANNOUNCEMENT BAR -->
+<div id="announcementBar" style="display:none;background:linear-gradient(90deg,var(--gf2),var(--cf));padding:8px 20px;font-size:12px;color:var(--text);text-align:center;border-bottom:1px solid var(--border2);">
+  <span id="announcementText"></span>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <canvas id="hc"></canvas>
+  <div class="hero-ov">
+    <div class="hero-left">
+      <div class="hero-ey">Cybersecurity Expert & Full-Stack Developer</div>
+      <div class="hname">KHAIRUL<br><span>ISLAM</span></div>
+      <div class="hsub">// Ethical Hacker · Web Dev · Security Researcher</div>
+      <div class="hbtns">
+        <div class="hbtn1" onclick="window.open('https://bugcrowd.com/h/khairulislam5b75f040-4d84-4921-bd5a-8fdfbbb59ba7','_blank')">Bugcrowd</div>
+        <div class="hbtn2" onclick="window.open('https://github.com/bejoykhan80','_blank')">GitHub</div>
+        <div class="hbtn3" onclick="scrollToBooking()">📅 Book Now</div>
+      </div>
+      <div class="havail"><div class="hpulse"></div><div class="hpulse-txt" id="availTxt">// available for freelance projects</div></div>
+    </div>
+    <div class="hero-right">
+      <div class="hbadge"><div class="hbadge-num">5+</div><div class="hbadge-txt">Years<br>Expert</div></div>
+      <div class="hero-pills">
+        <div class="hpill">[CEH_v12]</div>
+        <div class="hpill">[OSCP]</div>
+        <div class="hpill">[Bugcrowd]</div>
+        <div class="hpill">[GitHub]</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="stats">
+  <div class="stat"><div class="snum" id="s1">0</div><div class="slbl">Projects Done</div></div>
+  <div class="stat"><div class="snum" id="s2">0</div><div class="slbl">Happy Clients</div></div>
+  <div class="stat"><div class="snum" id="s3">0</div><div class="slbl">CTF Wins</div></div>
+  <div class="stat"><div class="snum" id="s4">0%</div><div class="slbl">Success Rate</div></div>
+</div>
+
+<!-- ABOUT -->
+<div class="sec" id="about">
+  <div class="sec-hd"><div class="sec-tag">About Me</div><div class="sec-line"></div><div class="sec-num">01</div></div>
+  <div class="about-main">
+    <div class="acard">
+      <div class="about-txt">আমি <strong>Khairul Islam</strong> — একজন passionate Ethical Hacker ও Full-Stack Developer। ২০১৯ থেকে সাইবারসিকিউরিটি জগতে কাজ করছি।<br><br><strong>CEH, OSCP ও CompTIA Security+</strong> সার্টিফাইড। Bugcrowd-এ সক্রিয় bug bounty hunter। GitHub-এ open source contributor।</div>
+    </div>
+    <div class="acard">
+      <div class="rlbl">// skill_radar.exe</div>
+      <div class="rwrap"><canvas id="rc"></canvas></div>
+    </div>
+  </div>
+  <div class="about-info-row">
+    <div class="ainfo"><div class="ainfo-ic">📅</div><div class="ainfo-lbl">Experience</div><div class="ainfo-val">5+ বছর</div><div class="ainfo-sub">Since 2019</div></div>
+    <div class="ainfo"><div class="ainfo-ic">🔐</div><div class="ainfo-lbl">Speciality</div><div class="ainfo-val">Pen Testing</div><div class="ainfo-sub">& Web Dev</div></div>
+    <div class="ainfo"><div class="ainfo-ic">✅</div><div class="ainfo-lbl">Status</div><div class="ainfo-val" id="statusVal" style="color:var(--green);">Available</div><div class="ainfo-sub">Freelance Open</div></div>
+  </div>
+  <div class="bars-card">
+    <div class="blbl">// expertise_depth.scan</div>
+    <div class="sbs">
+      <div><div class="sb-top"><span class="sb-name">Penetration Testing</span><span class="sb-pct">98%</span></div><div class="sb-track"><div class="sb-fill c" data-w="98"></div></div></div>
+      <div><div class="sb-top"><span class="sb-name">Web App Security</span><span class="sb-pct">95%</span></div><div class="sb-track"><div class="sb-fill c" data-w="95"></div></div></div>
+      <div><div class="sb-top"><span class="sb-name">Network Security</span><span class="sb-pct">92%</span></div><div class="sb-track"><div class="sb-fill g" data-w="92"></div></div></div>
+      <div><div class="sb-top"><span class="sb-name">Full-Stack Dev</span><span class="sb-pct">88%</span></div><div class="sb-track"><div class="sb-fill g" data-w="88"></div></div></div>
+      <div><div class="sb-top"><span class="sb-name">OSINT & Forensics</span><span class="sb-pct">90%</span></div><div class="sb-track"><div class="sb-fill c" data-w="90"></div></div></div>
+      <div><div class="sb-top"><span class="sb-name">Python / Bash</span><span class="sb-pct">93%</span></div><div class="sb-track"><div class="sb-fill c" data-w="93"></div></div></div>
+    </div>
+  </div>
+  <div class="loc-card">
+    <div class="llbl">// location.trace</div>
+    <div class="loc-inner">
+      <div class="loc-map-wrap"><canvas id="mc" width="300" height="125"></canvas></div>
+      <div class="loc-details">
+        <div class="loc-row"><div class="loc-ic">🏙</div><div><div class="loc-k">City</div><div class="loc-v">Dhaka</div></div></div>
+        <div class="loc-row"><div class="loc-ic">🌍</div><div><div class="loc-k">Country</div><div class="loc-v">Bangladesh 🇧🇩</div></div></div>
+        <div class="loc-row"><div class="loc-ic">🕐</div><div><div class="loc-k">Timezone</div><div class="loc-v">GMT+6 (BST)</div></div></div>
+        <div class="loc-row"><div class="loc-ic">🌐</div><div><div class="loc-k">Work Mode</div><div class="loc-v">Remote / Worldwide</div></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- EXCLUSIVE MEMBERS CONTENT -->
+<div class="sec" id="exclusive" style="padding-top:0;">
+  <div class="sec-hd"><div class="sec-tag">Members Area</div><div class="sec-line"></div><div class="sec-num">02</div></div>
+  <div id="exclusiveContent"></div>
+</div>
+
+<!-- VIDEO CONTENT -->
+<div class="sec" id="videos" style="padding-top:0;">
+  <div class="sec-hd"><div class="sec-tag">Video Content</div><div class="sec-line"></div><div class="sec-num">03</div></div>
+  <div class="videos" id="videoGrid"><div class="no-vids">🎬 Admin এখনো ভিডিও যোগ করেননি।</div></div>
+</div>
+
+<!-- BOOKING -->
+<div class="sec" id="booking" style="padding-top:0;">
+  <div class="sec-hd"><div class="sec-tag">Book Appointment</div><div class="sec-line"></div><div class="sec-num">04</div></div>
+  <div id="bookingContent"></div>
+</div>
+
+<!-- SERVICES -->
+<div class="sec" id="services" style="padding-top:0;">
+  <div class="sec-hd"><div class="sec-tag">Services</div><div class="sec-line"></div><div class="sec-num">05</div></div>
+  <div class="svcs">
+    <div class="svc" onclick="scrollToBooking()"><div class="svc-ic">🔓</div><div class="svc-t">Penetration Testing</div><div class="svc-d">Web, network ও mobile pen testing।</div><div class="svc-price">৳১৫,০০০ থেকে</div></div>
+    <div class="svc" onclick="scrollToBooking()"><div class="svc-ic">💻</div><div class="svc-t">Web Development</div><div class="svc-d">আধুনিক, নিরাপদ ওয়েবসাইট।</div><div class="svc-price">৳২০,০০০ থেকে</div></div>
+    <div class="svc" onclick="scrollToBooking()"><div class="svc-ic">🔒</div><div class="svc-t">Security Audit</div><div class="svc-d">কোড ও সিকিউরিটি পর্যালোচনা।</div><div class="svc-price">৳১০,০০০ থেকে</div></div>
+    <div class="svc" onclick="scrollToBooking()"><div class="svc-ic">📡</div><div class="svc-t">Bug Bounty</div><div class="svc-d">Bugcrowd-এ সক্রিয়।</div><div class="svc-price">Custom</div></div>
+    <div class="svc" onclick="scrollToBooking()"><div class="svc-ic">🎓</div><div class="svc-t">Training & CTF</div><div class="svc-d">১-অন-১ সাইবারসিকিউরিটি ট্রেনিং।</div><div class="svc-price">৳৫,০০০/hr থেকে</div></div>
+    <div class="svc" onclick="scrollToBooking()"><div class="svc-ic">📊</div><div class="svc-t">OSINT Research</div><div class="svc-d">ডিজিটাল ইন্টেলিজেন্স।</div><div class="svc-price">৳৮,০০০ থেকে</div></div>
+  </div>
+</div>
+
+<!-- EXPERIENCE -->
+<div class="sec" style="padding-top:0;">
+  <div class="sec-hd"><div class="sec-tag">Experience</div><div class="sec-line"></div><div class="sec-num">06</div></div>
+  <div class="tl">
+    <div class="tl-item"><div class="tl-dot active"></div><div><div class="tl-yr">2024 — বর্তমান</div><div class="tl-title">Senior Security Researcher</div><div class="tl-org">Freelance / Remote · Bugcrowd Active</div><div class="tl-desc">আন্তর্জাতিক ক্লায়েন্টদের pen testing। HackerOne ও Bugcrowd bug bounty।</div></div></div>
+    <div class="tl-item"><div class="tl-dot"></div><div><div class="tl-yr">2022 — 2024</div><div class="tl-title">Cybersecurity Analyst</div><div class="tl-org">TechSecure Ltd, Dhaka</div><div class="tl-desc">৮০+ pen test। Python ও Bash অটোমেশন।</div></div></div>
+    <div class="tl-item"><div class="tl-dot"></div><div><div class="tl-yr">2020 — 2022</div><div class="tl-title">Junior Web Developer</div><div class="tl-org">Digital Agency, Dhaka</div><div class="tl-desc">React, Node.js ও Django দিয়ে full-stack অ্যাপ।</div></div></div>
+    <div class="tl-item"><div class="tl-dot"></div><div><div class="tl-yr">2019 — 2020</div><div class="tl-title">Security Intern</div><div class="tl-org">CyberShield BD</div><div class="tl-desc">Kali Linux, Metasploit ও নেটওয়ার্ক স্ক্যানিং।</div></div></div>
+  </div>
+</div>
+
+<!-- CERTS -->
+<div class="sec" style="padding-top:0;">
+  <div class="sec-hd"><div class="sec-tag">Certifications</div><div class="sec-line"></div><div class="sec-num">07</div></div>
+  <div class="certs">
+    <div class="cert"><div class="cert-ic">🏆</div><div class="cert-n">CEH v12</div><div class="cert-o">EC-Council</div><div class="cert-y">2024 · 2027</div><div class="cert-ok">✓ Verified</div></div>
+    <div class="cert"><div class="cert-ic">🔑</div><div class="cert-n">OSCP</div><div class="cert-o">Offensive Security</div><div class="cert-y">2024 · Lifetime</div><div class="cert-ok">✓ Verified</div></div>
+    <div class="cert"><div class="cert-ic">📄</div><div class="cert-n">CompTIA Security+</div><div class="cert-o">CompTIA</div><div class="cert-y">2023 · 2026</div><div class="cert-ok">✓ Verified</div></div>
+    <div class="cert"><div class="cert-ic">🚀</div><div class="cert-n">eJPT</div><div class="cert-o">eLearnSecurity</div><div class="cert-y">2023 · Lifetime</div><div class="cert-ok">✓ Verified</div></div>
+    <div class="cert"><div class="cert-ic">☁️</div><div class="cert-n">AWS Security</div><div class="cert-o">Amazon Web Services</div><div class="cert-y">2024 · 2027</div><div class="cert-ok">✓ Verified</div></div>
+    <div class="cert"><div class="cert-ic">🔍</div><div class="cert-n">PNPT</div><div class="cert-o">TCM Security</div><div class="cert-y">2024 · Lifetime</div><div class="cert-ok">✓ Verified</div></div>
+  </div>
+  <!-- Certificate file upload (Admin only) -->
+  <div id="certUploadSection" style="margin-top:14px;display:none;">
+    <div class="cert-mgr">
+      <div class="cert-mgr-title">📎 Certificate Files Upload</div>
+      <div class="cert-drop" id="certDropZone">
+        <div class="cert-drop-ic">📁</div>
+        <div class="cert-drop-txt">Certificate file drag করো বা click করো</div>
+        <div class="cert-drop-sub">PDF, JPG, PNG — max 5MB each</div>
+      </div>
+      <input type="file" id="certFileInput" style="display:none;" accept=".pdf,.jpg,.jpeg,.png" multiple/>
+      <div class="cert-grid-list" id="certGridList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- TOOLS -->
+<div class="sec" style="padding-top:0;">
+  <div class="sec-hd"><div class="sec-tag">Tools & Skills</div><div class="sec-line"></div><div class="sec-num">08</div></div>
+  <div class="tools-grid">
+    <div class="tool"><span class="tool-n">Nmap / Masscan</span><span class="tool-l">Expert</span></div>
+    <div class="tool"><span class="tool-n">Burp Suite Pro</span><span class="tool-l">Expert</span></div>
+    <div class="tool"><span class="tool-n">Metasploit</span><span class="tool-l">Expert</span></div>
+    <div class="tool"><span class="tool-n">Wireshark</span><span class="tool-l">Expert</span></div>
+    <div class="tool"><span class="tool-n">OWASP ZAP</span><span class="tool-l">Expert</span></div>
+    <div class="tool"><span class="tool-n">SQLMap</span><span class="tool-l">Advanced</span></div>
+    <div class="tool"><span class="tool-n">Shodan / Censys</span><span class="tool-l">Expert</span></div>
+    <div class="tool"><span class="tool-n">Maltego</span><span class="tool-l">Advanced</span></div>
+    <div class="tool"><span class="tool-n">Kali Linux</span><span class="tool-l">Expert</span></div>
+    <div class="tool"><span class="tool-n">Python / Bash</span><span class="tool-l">Expert</span></div>
+    <div class="tool"><span class="tool-n">React / Node.js</span><span class="tool-l">Advanced</span></div>
+    <div class="tool"><span class="tool-n">Gobuster / Nikto</span><span class="tool-l">Expert</span></div>
+  </div>
+</div>
+
+<!-- PROJECTS -->
+<div class="sec" id="work" style="padding-top:0;">
+  <div class="sec-hd"><div class="sec-tag">Recent Projects</div><div class="sec-line"></div><div class="sec-num">09</div></div>
+  <div class="projs">
+    <div class="proj"><div class="pimg a">🔍</div><div class="pbody"><div class="ptag">Pen Test</div><div class="ptitle">E-Commerce Security Audit</div><div class="pdesc">১২টি critical vulnerability পাওয়া ও ঠিক।</div></div><div class="pfoot"><span class="ptech">Burp · Nmap</span><span class="plink">View ↗</span></div></div>
+    <div class="proj"><div class="pimg b">🌐</div><div class="pbody"><div class="ptag">Web App</div><div class="ptitle">Corporate Dashboard</div><div class="pdesc">Fortune 500 কোম্পানির নিরাপদ analytics।</div></div><div class="pfoot"><span class="ptech">React · Node.js</span><span class="plink">View ↗</span></div></div>
+    <div class="proj"><div class="pimg c">🏆</div><div class="pbody"><div class="ptag">CTF</div><div class="ptitle">National CTF 2025</div><div class="pdesc">জাতীয় CTF-এ ১ম স্থান।</div></div><div class="pfoot"><span class="ptech">Multiple Tools</span><span class="plink">View ↗</span></div></div>
+    <div class="proj"><div class="pimg d">📊</div><div class="pbody"><div class="ptag">Bugcrowd</div><div class="ptitle">Bug Bounty Findings</div><div class="pdesc">Bugcrowd-এ critical bugs রিপোর্ট।</div></div><div class="pfoot"><span class="ptech">Maltego · Shodan</span><a class="plink" href="https://bugcrowd.com/h/khairulislam5b75f040-4d84-4921-bd5a-8fdfbbb59ba7" target="_blank">View ↗</a></div></div>
+  </div>
+</div>
+
+<!-- PRICING -->
+<div class="sec" style="padding-top:0;">
+  <div class="sec-hd"><div class="sec-tag">Pricing</div><div class="sec-line"></div><div class="sec-num">10</div></div>
+  <div class="pricing-grid">
+    <div class="plan"><div class="plan-name">Starter</div><div class="plan-price">৳৯,৯০০</div><div class="plan-per">// এককালীন</div><div class="plan-items"><div class="pli">Basic vulnerability scan</div><div class="pli">১ পেজ audit</div><div class="pli">PDF রিপোর্ট</div><div class="pli">৩ দিন</div></div><div class="plan-btn outline" onclick="scrollToBooking()">Book Now</div></div>
+    <div class="plan featured"><div class="plan-badge">Most Popular</div><div class="plan-name">Professional</div><div class="plan-price">৳১৫,০০০</div><div class="plan-per">// প্রতি প্রজেক্ট</div><div class="plan-items"><div class="pli">Full pen test</div><div class="pli">OWASP Top 10</div><div class="pli">বিস্তারিত রিপোর্ট</div><div class="pli">৩০ দিন সাপোর্ট</div><div class="pli">ভিডিও walkthrough</div></div><div class="plan-btn solid" onclick="scrollToBooking()">Book Now</div></div>
+    <div class="plan"><div class="plan-name">Enterprise</div><div class="plan-price">Custom</div><div class="plan-per">// মাসিক রিটেইনার</div><div class="plan-items"><div class="pli">Unlimited audits</div><div class="pli">২৪/৭ মনিটরিং</div><div class="pli">Dedicated টিম</div><div class="pli">Compliance</div></div><div class="plan-btn outline" onclick="window.open('https://t.me/Khairul_i','_blank')">Contact</div></div>
+  </div>
+</div>
+
+<!-- REVIEWS -->
+<div class="sec" style="padding-top:0;">
+  <div class="sec-hd"><div class="sec-tag">Client Reviews</div><div class="sec-line"></div><div class="sec-num">11</div></div>
+
+  <!-- Terminal style header -->
+  <div class="term-box" style="margin-bottom:14px;">
+    <div class="term-bar"><div class="td td-r"></div><div class="td td-y"></div><div class="td td-g"></div><div class="term-title-txt">// reviews.exe</div></div>
+    <div class="term-body">
+      <div class="tl"><span class="tp">sys@khairul:~$</span><span class="tc"> cat reviews.log | grep "verified"</span></div>
+      <div class="tl"><span class="to">Loading verified client reviews...</span></div>
+      <div class="tl"><span class="ts">✓ Reviews loaded. Average rating: <span id="avgRating">5.0</span>/5.0 (<span id="totalRevCount">3</span> reviews)</span></div>
+      <div class="tl"><span class="tp">sys@khairul:~$</span><span class="tcur"></span></div>
+    </div>
+  </div>
+
+  <!-- Rating overview -->
+  <div class="rev-avg" id="revAvg">
+    <div class="rev-avg-num" id="revAvgNum">5.0</div>
+    <div>
+      <div class="rev-avg-stars" id="revAvgStars">★★★★★</div>
+      <div class="rev-avg-count" id="revAvgCount">3 reviews</div>
+    </div>
+  </div>
+
+  <!-- Review tabs -->
+  <div class="rev-tabs">
+    <div class="rev-tab active" onclick="switchRevTab('all')">সব</div>
+    <div class="rev-tab" onclick="switchRevTab('verified')">✓ Verified</div>
+    <div class="rev-tab" onclick="switchRevTab('mine')" id="myRevTab" style="display:none;">আমার Review</div>
+  </div>
+
+  <!-- Static reviews -->
+  <div id="staticRevs">
+    <div class="urev"><div class="urev-hd"><div class="urev-auth"><div class="urev-av">JR</div><div><div class="urev-name">James R.</div><div class="urev-date">CTO, FinTech Startup</div></div></div></div><div class="urev-stars">★★★★★</div><div class="urev-txt">"পেমেন্ট সিস্টেমে ৩টি critical vulnerability খুঁজে বের করলেন। অত্যন্ত প্রফেশনাল।"</div></div>
+    <div class="urev"><div class="urev-hd"><div class="urev-auth"><div class="urev-av">SA</div><div><div class="urev-name">Sarah A.</div><div class="urev-date">Founder, E-Commerce BD</div></div></div></div><div class="urev-stars">★★★★★</div><div class="urev-txt">"আমাদের স্টার্টআপের জন্য সেরা বিনিয়োগ। বিস্তারিত রিপোর্ট ও সমাধান।"</div></div>
+    <div class="urev"><div class="urev-hd"><div class="urev-auth"><div class="urev-av">MK</div><div><div class="urev-name">M. Karim</div><div class="urev-date">Team Lead, Tech Agency</div></div></div></div><div class="urev-stars">★★★★★</div><div class="urev-txt">"পুরো dev team-কে secure coding শেখালেন। জ্ঞানসম্পন্ন ও ধৈর্যশীল।"</div></div>
+  </div>
+
+  <!-- User reviews -->
+  <div id="userRevsList"></div>
+
+  <!-- Write review form (logged in users) -->
+  <div id="writeRevBox" style="margin-top:16px;display:none;">
+    <div class="rev-form-box">
+      <div class="rev-form-title">✍️ তোমার Review লিখো</div>
+      <div class="star-sel" id="starSel">
+        <button class="star-btn" onclick="setStar(1)">★</button>
+        <button class="star-btn" onclick="setStar(2)">★</button>
+        <button class="star-btn" onclick="setStar(3)">★</button>
+        <button class="star-btn" onclick="setStar(4)">★</button>
+        <button class="star-btn" onclick="setStar(5)">★</button>
+      </div>
+      <div class="ff"><textarea id="revTxt" placeholder="তোমার অভিজ্ঞতা শেয়ার করো..." style="background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:10px;border-radius:4px;width:100%;outline:none;font-size:12px;resize:none;min-height:80px;font-family:DM Sans,sans-serif;"></textarea></div>
+      <button class="btn-p" onclick="submitReview()">Review জমা দাও</button>
+      <div style="margin-top:8px;font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;">// Admin approval-এর পর দেখাবে</div>
+    </div>
+  </div>
+  <div id="loginToReview" style="margin-top:14px;display:none;">
+    <div style="font-size:12px;color:var(--muted);text-align:center;padding:12px;background:var(--bg2);border-radius:4px;border:1px solid var(--border);">Review দিতে <span style="color:var(--cyan);cursor:pointer;" onclick="document.getElementById('authOverlay').style.display='flex'">Login করুন</span></div>
+  </div>
+</div>
+
+<!-- BLOG -->
+<div class="sec" style="padding-top:0;">
+  <div class="sec-hd"><div class="sec-tag">Blog</div><div class="sec-line"></div><div class="sec-num">12</div></div>
+  <div class="blogs">
+    <div class="blog"><div class="blog-img b1">📝</div><div class="blog-body"><div class="blog-cat">Ethical Hacking</div><div class="blog-title">SQL Injection কী এবং কীভাবে ঠেকাবেন?</div><div class="blog-meta">15 Apr 2026 · 8 min</div><div class="blog-read">পড়ুন ↗</div></div></div>
+    <div class="blog"><div class="blog-img b2">🔧</div><div class="blog-body"><div class="blog-cat">Tools</div><div class="blog-title">Nmap দিয়ে Network Scanning শুরু করুন</div><div class="blog-meta">02 Apr 2026 · 10 min</div><div class="blog-read">পড়ুন ↗</div></div></div>
+    <div class="blog"><div class="blog-img b3">🏆</div><div class="blog-body"><div class="blog-cat">CTF</div><div class="blog-title">CTF-এ Beginners কীভাবে শুরু করবেন</div><div class="blog-meta">20 Mar 2026 · 6 min</div><div class="blog-read">পড়ুন ↗</div></div></div>
+    <div class="blog"><div class="blog-img b4">🔒</div><div class="blog-body"><div class="blog-cat">Security</div><div class="blog-title">OWASP Top 10 — ২০২৬ আপডেট</div><div class="blog-meta">05 Mar 2026 · 12 min</div><div class="blog-read">পড়ুন ↗</div></div></div>
+  </div>
+</div>
+
+<!-- FAQ -->
+<div class="sec" style="padding-top:0;">
+  <div class="sec-hd"><div class="sec-tag">FAQ</div><div class="sec-line"></div><div class="sec-num">13</div></div>
+  <div class="faq">
+    <div class="faq-item"><div class="faq-q" onclick="tFaq(0)"><span>Ethical hacking কি আইনসম্মত?</span><span class="faq-ico" id="fi0">+</span></div><div class="faq-a" id="fa0">হ্যাঁ। মালিকের লিখিত অনুমতি নিয়ে করা হয়।</div></div>
+    <div class="faq-item"><div class="faq-q" onclick="tFaq(1)"><span>কাজ শুরু হতে কতক্ষণ লাগে?</span><span class="faq-ico" id="fi1">+</span></div><div class="faq-a" id="fa1">সাধারণত ২৪-৪৮ ঘণ্টার মধ্যে।</div></div>
+    <div class="faq-item"><div class="faq-q" onclick="tFaq(2)"><span>রিপোর্ট কি বাংলায় পাওয়া যায়?</span><span class="faq-ico" id="fi2">+</span></div><div class="faq-a" id="fa2">হ্যাঁ, বাংলা ও ইংরেজি উভয় ভাষায়।</div></div>
+    <div class="faq-item"><div class="faq-q" onclick="tFaq(3)"><span>Payment কীভাবে করতে হয়?</span><span class="faq-ico" id="fi3">+</span></div><div class="faq-a" id="fa3">bKash, Nagad, PayPal ও Bank Transfer। বড় প্রজেক্টে ৫০% অগ্রিম।</div></div>
+    <div class="faq-item"><div class="faq-q" onclick="tFaq(4)"><span>Booking করার পর কী হবে?</span><span class="faq-ico" id="fi4">+</span></div><div class="faq-a" id="fa4">Booking submit করার পর Khairul Islam ২৪ঘণ্টার মধ্যে confirm করবেন। তুমি Dashboard-এ status দেখতে পাবে।</div></div>
+  </div>
+</div>
+
+<!-- CONTACT -->
+<div class="contact-box" id="contact">
+  <div class="contact-inner">
+    <div>
+      <div class="ct-title">কাজ করবে আমার সাথে?</div>
+      <div class="ct-sub">আজই যোগাযোগ করো।</div>
+      <div class="ct-items">
+        <a class="ct-item" href="mailto:khairul.cyber@proton.me"><div class="ct-ic">✉️</div><div><div class="ct-lbl">Email</div><div class="ct-val">khairul.cyber@proton.me</div></div></a>
+        <a class="ct-item" href="https://t.me/Khairul_i" target="_blank"><div class="ct-ic">✈️</div><div><div class="ct-lbl">Telegram</div><div class="ct-val">t.me/Khairul_i</div></div></a>
+        <a class="ct-item" href="https://github.com/bejoykhan80" target="_blank"><div class="ct-ic">🐙</div><div><div class="ct-lbl">GitHub</div><div class="ct-val">github.com/bejoykhan80</div></div></a>
+        <a class="ct-item" href="https://bugcrowd.com/h/khairulislam5b75f040-4d84-4921-bd5a-8fdfbbb59ba7" target="_blank"><div class="ct-ic">🎯</div><div><div class="ct-lbl">Bugcrowd</div><div class="ct-val">bugcrowd.com/khairul</div></div></a>
+      </div>
+    </div>
+    <div class="ct-form">
+      <input class="ci" placeholder="তোমার নাম" type="text" id="ctName"/>
+      <input class="ci" placeholder="ইমেইল অ্যাড্রেস" type="email" id="ctEmail"/>
+      <input class="ci" placeholder="বাজেট (BDT)" type="text" id="ctBudget"/>
+      <input class="ci" placeholder="প্রজেক্টের বিষয়" type="text" id="ctSubject"/>
+      <textarea class="ci" placeholder="বিস্তারিত লিখুন..." rows="3" style="resize:none;" id="ctMsg"></textarea>
+      <button class="csend" onclick="submitContact()">বার্তা পাঠাও →</button>
+    </div>
+  </div>
+</div>
+
+<!-- SOCIALS -->
+<div class="sec-hd" style="padding:0 24px 12px;"><div class="sec-tag">Connect</div><div class="sec-line"></div></div>
+<div class="socials-strip">
+  <a class="soc-btn" href="https://t.me/Khairul_i" target="_blank"><div class="soc-ic">✈️</div><div><div class="soc-label">Telegram</div><div class="soc-handle">@Khairul_i</div></div></a>
+  <a class="soc-btn" href="mailto:khairul.cyber@proton.me"><div class="soc-ic">✉️</div><div><div class="soc-label">ProtonMail</div><div class="soc-handle">khairul.cyber@proton.me</div></div></a>
+  <a class="soc-btn" href="https://github.com/bejoykhan80" target="_blank"><div class="soc-ic">🐙</div><div><div class="soc-label">GitHub</div><div class="soc-handle">@bejoykhan80</div></div></a>
+  <a class="soc-btn" href="https://bugcrowd.com/h/khairulislam5b75f040-4d84-4921-bd5a-8fdfbbb59ba7" target="_blank"><div class="soc-ic">🎯</div><div><div class="soc-label">Bugcrowd</div><div class="soc-handle">Active Hunter</div></div></a>
+  <a class="soc-btn" href="#"><div class="soc-ic">💼</div><div><div class="soc-label">LinkedIn</div><div class="soc-handle">Khairul Islam</div></div></a>
+</div>
+<div class="footer">
+  <div><div class="fl-logo">KHAIRUL ISLAM</div><div class="fl-tagline">// Ethical Hacker · Web Developer · Security Researcher · Bangladesh</div></div>
+  <div class="fr">
+    <div class="fsocs">
+      <a class="fsoc" href="https://t.me/Khairul_i" target="_blank">Telegram</a>
+      <a class="fsoc" href="mailto:khairul.cyber@proton.me">Email</a>
+      <a class="fsoc" href="https://github.com/bejoykhan80" target="_blank">GitHub</a>
+      <a class="fsoc" href="https://bugcrowd.com/h/khairulislam5b75f040-4d84-4921-bd5a-8fdfbbb59ba7" target="_blank">Bugcrowd</a>
+    </div>
+    <div class="fcopy">// © 2026 Khairul Islam. All rights reserved.</div>
+  </div>
+</div>
+<!-- TOAST NOTIFICATIONS -->
+<div class="toast-wrap" id="toastWrap"></div>
+
+</div><!-- end mainSite -->
+
+<!-- ======= AI CHATBOT ======= -->
+<div class="chat-fab" id="chatFab" style="display:none;">
+  <div class="chat-btn" onclick="toggleChat()">💬</div>
+  <div class="chat-notif" id="chatNotif">1</div>
+</div>
+<div class="chat-win" id="chatWin">
+  <div class="chat-win-head">
+    <div class="cwh-left">
+      <div class="cwh-av">KI<div class="cwh-online"></div></div>
+      <div><div class="cwh-name">Khairul Islam</div><div class="cwh-status">● AI Assistant</div></div>
+    </div>
+    <div class="cwh-right">
+      <div class="cwh-btn" onclick="clearChat()" title="Clear">🗑</div>
+      <div class="cwh-btn" onclick="toggleChat()">✕</div>
+    </div>
+  </div>
+  <div class="chat-banner"><strong>AI-powered</strong> — বাংলা বা English-এ প্রশ্ন করুন।</div>
+  <div class="chat-msgs-wrap" id="chatMsgs"></div>
+  <div class="chat-qbtns">
+    <div class="qbtn" onclick="qm('সার্ভিস কী কী?')">🔧 Services</div>
+    <div class="qbtn" onclick="qm('Booking করতে চাই')">📅 Book</div>
+    <div class="qbtn" onclick="qm('Pricing কত?')">💰 Pricing</div>
+    <div class="qbtn" onclick="qm('যোগাযোগ করব কীভাবে?')">📞 Contact</div>
+  </div>
+  <div class="chat-foot-wrap">
+    <div class="chat-in-box">
+      <input class="chat-in" id="chatIn" placeholder="বার্তা লিখুন..." onkeydown="if(event.key==='Enter')sendChat()"/>
+    </div>
+    <button class="chat-snd" id="chatSndBtn" onclick="sendChat()">➤</button>
+  </div>
+  <div class="chat-powered">Powered by <em>Claude AI</em><span style="color:var(--green);">● Ready</span></div>
+</div>
+
+<script src="js/main.js"></script>
+</body>
+</html>

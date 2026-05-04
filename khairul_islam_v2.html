@@ -1,0 +1,1862 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Khairul Islam — Ethical Hacker & Web Developer</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --cyan:#00d4ff;--cf:#00d4ff10;--cf2:#00d4ff22;--cf3:#00d4ff40;
+  --gold:#c9a84c;--gf:#c9a84c14;--gf2:#c9a84c30;
+  --green:#00ff88;--red:#ff4757;--purple:#7c3aed;
+  --bg:#04080f;--bg2:#080f1a;--bg3:#0d1520;--bg4:#121d2b;
+  --text:#e8f4ff;--muted:#3a5a7a;--soft:#6a8fa8;
+  --border:#0d2a40;--border2:#1a3a55;
+}
+.lm{--bg:#f0f5ff;--bg2:#fff;--bg3:#e8f0fa;--bg4:#dde8f5;--text:#0a1628;--muted:#aabbd0;--soft:#5577aa;--border:#d0e0f0;--border2:#bbd0e8;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;transition:background .4s,color .4s;}
+
+/* ======= MODALS & OVERLAYS ======= */
+.overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(4,8,15,.96);z-index:9999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);}
+.modal-box{background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:32px 28px;width:100%;max-width:400px;position:relative;max-height:90vh;overflow-y:auto;}
+.modal-box::-webkit-scrollbar{width:4px;}
+.modal-box::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+.modal-close{position:absolute;top:14px;right:14px;width:28px;height:28px;border-radius:50%;background:var(--bg3);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:12px;color:var(--muted);}
+.modal-close:hover{background:var(--red);color:#fff;}
+.modal-logo{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--cyan);letter-spacing:3px;text-align:center;margin-bottom:4px;}
+.modal-sub{font-size:11px;color:var(--muted);text-align:center;margin-bottom:20px;font-family:'DM Mono',monospace;}
+.auth-tabs{display:flex;border:1px solid var(--border2);border-radius:6px;overflow:hidden;margin-bottom:20px;}
+.auth-tab{flex:1;padding:9px;text-align:center;font-size:10px;font-weight:500;letter-spacing:2px;text-transform:uppercase;cursor:pointer;color:var(--muted);font-family:'DM Mono',monospace;transition:all .2s;}
+.auth-tab.active{background:var(--cyan);color:#000;}
+.form-field{margin-bottom:12px;}
+.form-field label{display:block;font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:5px;font-family:'DM Mono',monospace;}
+.form-field input,.form-field select,.form-field textarea{width:100%;background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:10px 13px;border-radius:4px;font-size:12px;outline:none;transition:border-color .2s;font-family:'DM Sans',sans-serif;}
+.form-field input:focus,.form-field select:focus,.form-field textarea:focus{border-color:var(--cyan);}
+.form-field input::placeholder,.form-field textarea::placeholder{color:var(--muted);}
+.form-field select{-webkit-appearance:none;}
+.form-field textarea{resize:vertical;min-height:80px;}
+.btn-primary{width:100%;padding:11px;background:var(--cyan);color:#000;border:none;border-radius:4px;font-size:10px;font-weight:500;letter-spacing:2px;text-transform:uppercase;cursor:pointer;font-family:'DM Mono',monospace;transition:opacity .2s;}
+.btn-primary:hover{opacity:.85;}
+.btn-outline{width:100%;padding:11px;background:transparent;color:var(--cyan);border:1px solid var(--border2);border-radius:4px;font-size:10px;font-weight:500;letter-spacing:2px;text-transform:uppercase;cursor:pointer;font-family:'DM Mono',monospace;}
+.btn-gold{width:100%;padding:11px;background:var(--gold);color:#000;border:none;border-radius:4px;font-size:10px;font-weight:500;letter-spacing:2px;text-transform:uppercase;cursor:pointer;font-family:'DM Mono',monospace;}
+.form-err{font-size:11px;color:var(--red);text-align:center;margin-top:8px;min-height:16px;font-family:'DM Mono',monospace;}
+.form-hint{margin-top:12px;padding:9px 12px;background:var(--gf);border:1px solid var(--gf2);border-radius:4px;font-size:11px;color:var(--gold);font-family:'DM Mono',monospace;text-align:center;}
+.skip-link{margin-top:14px;text-align:center;font-size:11px;color:var(--muted);cursor:pointer;font-family:'DM Mono',monospace;}
+.skip-link:hover{color:var(--cyan);}
+
+/* ======= TOP BAR ======= */
+#topBar{position:fixed;top:0;left:0;right:0;background:#060d18;border-bottom:1px solid var(--border2);padding:7px 20px;z-index:200;display:none;justify-content:space-between;align-items:center;}
+.tb-left{font-size:11px;color:var(--soft);font-family:'DM Mono',monospace;}
+.tb-left span{color:var(--cyan);}
+.tb-right{display:flex;gap:8px;align-items:center;}
+.tb-btn{padding:4px 12px;border-radius:3px;font-size:10px;font-weight:500;letter-spacing:1px;text-transform:uppercase;cursor:pointer;font-family:'DM Mono',monospace;border:none;transition:all .2s;}
+.tb-btn.admin{background:var(--gf2);color:var(--gold);}
+.tb-btn.dashboard{background:var(--cf2);color:var(--cyan);}
+.tb-btn.logout{background:var(--border2);color:var(--muted);}
+.tb-btn.logout:hover{background:var(--red);color:#fff;}
+
+/* ======= NAV ======= */
+.nav{display:flex;justify-content:space-between;align-items:center;padding:14px 24px;border-bottom:1px solid var(--border2);background:var(--bg2);position:sticky;top:0;z-index:50;}
+.nav-logo{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;letter-spacing:3px;color:var(--cyan);}
+.nav-logo span{color:var(--gold);}
+.nav-links{display:flex;gap:14px;align-items:center;flex-wrap:wrap;}
+.nav-links a{font-size:10px;letter-spacing:2px;color:var(--muted);cursor:pointer;text-transform:uppercase;transition:color .2s;text-decoration:none;}
+.nav-links a:hover{color:var(--cyan);}
+.toggle{width:40px;height:21px;background:var(--bg3);border:1px solid var(--border2);border-radius:11px;cursor:pointer;position:relative;flex-shrink:0;}
+.tdot{width:15px;height:15px;background:var(--cyan);border-radius:50%;position:absolute;top:2px;left:2px;transition:left .25s;}
+.lm .tdot{left:21px;}
+.hire{background:var(--cyan);color:#000;font-size:10px;font-weight:500;letter-spacing:2px;padding:7px 14px;border-radius:2px;cursor:pointer;text-transform:uppercase;}
+
+/* ======= HERO ======= */
+.hero{position:relative;overflow:hidden;border-bottom:1px solid var(--border2);}
+canvas#hc{display:block;width:100%;height:360px;}
+.hero-ov{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;padding:0 32px;pointer-events:none;}
+.hero-left{flex:1;}
+.hero-ey{font-family:'DM Mono',monospace;font-size:11px;color:var(--cyan);letter-spacing:3px;margin-bottom:14px;opacity:0;animation:fu .7s .1s forwards;}
+.hero-ey::before{content:'> ';opacity:.5;}
+.hname{font-family:'Syne',sans-serif;font-size:52px;font-weight:800;line-height:.95;color:var(--text);margin-bottom:10px;opacity:0;animation:fu .7s .2s forwards;}
+.hname span{color:var(--cyan);}
+.hsub{font-size:13px;color:var(--soft);margin-bottom:20px;font-family:'DM Mono',monospace;opacity:0;animation:fu .7s .3s forwards;}
+.hbtns{display:flex;gap:8px;pointer-events:all;opacity:0;animation:fu .7s .4s forwards;flex-wrap:wrap;}
+.hbtn1{background:var(--cyan);color:#000;font-size:10px;font-weight:500;letter-spacing:2px;padding:10px 20px;border-radius:2px;cursor:pointer;text-transform:uppercase;}
+.hbtn2{background:var(--gold);color:#000;font-size:10px;font-weight:500;letter-spacing:2px;padding:10px 20px;border-radius:2px;cursor:pointer;text-transform:uppercase;}
+.hbtn3{border:1px solid var(--border2);color:var(--soft);font-size:10px;letter-spacing:2px;padding:10px 20px;border-radius:2px;cursor:pointer;text-transform:uppercase;pointer-events:all;}
+.havail{display:flex;align-items:center;gap:8px;margin-top:14px;pointer-events:all;opacity:0;animation:fu .7s .5s forwards;}
+.hpulse{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;}
+.hpulse-txt{font-size:11px;color:var(--soft);font-family:'DM Mono',monospace;}
+.hero-right{flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:10px;}
+.hbadge{width:106px;height:106px;border-radius:50%;border:1px solid var(--cf2);display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;animation:spin 22s linear infinite,fi 1s .5s forwards;}
+.hbadge-num{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:var(--cyan);}
+.hbadge-txt{font-size:9px;letter-spacing:2px;color:var(--soft);text-align:center;text-transform:uppercase;}
+.hero-pills{display:flex;flex-direction:column;gap:5px;align-items:flex-end;opacity:0;animation:fi .8s .7s forwards;}
+.hpill{font-size:10px;padding:3px 9px;border:1px solid var(--cf);color:rgba(0,212,255,.6);border-radius:20px;font-family:'DM Mono',monospace;white-space:nowrap;}
+
+/* ======= STATS ======= */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);background:var(--bg2);border-bottom:1px solid var(--border);}
+.stat{padding:18px 12px;text-align:center;border-right:1px solid var(--border);transition:background .2s;}
+.stat:last-child{border-right:none;}
+.stat:hover{background:var(--bg3);}
+.snum{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:var(--cyan);}
+.slbl{font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-top:3px;}
+
+/* ======= SECTIONS ======= */
+.sec{padding:36px 24px;}
+.sec-hd{display:flex;align-items:center;gap:12px;margin-bottom:20px;}
+.sec-line{flex:1;height:1px;background:var(--border);}
+.sec-tag{font-size:10px;letter-spacing:3px;color:var(--cyan);text-transform:uppercase;white-space:nowrap;font-family:'DM Mono',monospace;}
+.sec-num{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;}
+
+/* ======= ABOUT ======= */
+.about-main{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.acard{background:var(--bg2);border:1px solid var(--border2);border-radius:6px;padding:18px;}
+.about-txt{font-size:13px;color:var(--soft);line-height:2;}
+.about-txt strong{color:var(--cyan);font-weight:500;}
+.rlbl{font-size:10px;letter-spacing:2px;color:var(--cyan);text-transform:uppercase;margin-bottom:10px;font-family:'DM Mono',monospace;}
+.rwrap{position:relative;height:185px;}
+.about-info-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;}
+.ainfo{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:14px;transition:border-color .25s,transform .2s;}
+.ainfo:hover{border-color:var(--cyan);transform:translateY(-3px);}
+.ainfo-ic{font-size:18px;margin-bottom:8px;}
+.ainfo-lbl{font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:4px;font-family:'DM Mono',monospace;}
+.ainfo-val{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--text);}
+.ainfo-sub{font-size:11px;color:var(--soft);margin-top:2px;}
+.bars-card{background:var(--bg2);border:1px solid var(--border2);border-radius:6px;padding:16px;margin-bottom:14px;}
+.blbl{font-size:10px;letter-spacing:2px;color:var(--cyan);text-transform:uppercase;margin-bottom:14px;font-family:'DM Mono',monospace;}
+.sbs{display:flex;flex-direction:column;gap:11px;}
+.sb-top{display:flex;justify-content:space-between;margin-bottom:4px;}
+.sb-name{font-size:12px;color:var(--text);}
+.sb-pct{font-size:11px;color:var(--cyan);font-weight:500;font-family:'DM Mono',monospace;}
+.sb-track{height:4px;background:var(--bg3);border-radius:2px;}
+.sb-fill{height:4px;border-radius:2px;width:0;transition:width 1.3s cubic-bezier(.4,0,.2,1);position:relative;}
+.sb-fill.c{background:var(--cyan);}
+.sb-fill.g{background:var(--gold);}
+.sb-fill::after{content:'';position:absolute;right:-1px;top:-3px;width:10px;height:10px;border-radius:50%;border:2px solid var(--bg2);}
+.sb-fill.c::after{background:var(--cyan);}
+.sb-fill.g::after{background:var(--gold);}
+.loc-card{background:var(--bg2);border:1px solid var(--border2);border-radius:6px;padding:16px;}
+.llbl{font-size:10px;letter-spacing:2px;color:var(--cyan);text-transform:uppercase;margin-bottom:12px;font-family:'DM Mono',monospace;}
+.loc-inner{display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center;}
+.loc-map-wrap{border-radius:4px;overflow:hidden;border:1px solid var(--border);}
+.loc-details{display:flex;flex-direction:column;gap:9px;min-width:150px;}
+.loc-row{display:flex;align-items:flex-start;gap:9px;}
+.loc-ic{width:28px;height:28px;border-radius:50%;background:var(--cf);border:1px solid var(--cf2);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;}
+.loc-k{font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;font-family:'DM Mono',monospace;}
+.loc-v{font-size:12px;color:var(--text);font-weight:500;}
+
+/* ======= EXCLUSIVE CONTENT ======= */
+.exclusive-lock{background:linear-gradient(135deg,var(--bg2),var(--bg3));border:1px solid var(--border2);border-radius:8px;padding:28px;text-align:center;position:relative;overflow:hidden;}
+.exclusive-lock::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--cyan),var(--gold));}
+.lock-ic{font-size:32px;margin-bottom:12px;}
+.lock-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:var(--text);margin-bottom:8px;}
+.lock-desc{font-size:12px;color:var(--soft);line-height:1.8;margin-bottom:18px;}
+.exclusive-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;}
+.exc-card{background:var(--bg2);border:1px solid var(--border2);border-radius:6px;padding:16px;position:relative;overflow:hidden;}
+.exc-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--cyan);}
+.exc-icon{font-size:22px;margin-bottom:10px;}
+.exc-title{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--text);margin-bottom:5px;}
+.exc-desc{font-size:11px;color:var(--muted);line-height:1.7;}
+.exc-badge{display:inline-block;font-size:9px;padding:2px 8px;border-radius:20px;font-family:'DM Mono',monospace;margin-top:8px;}
+.exc-badge.free{background:var(--cf);color:var(--cyan);}
+.exc-badge.premium{background:var(--gf2);color:var(--gold);}
+
+/* ======= VIDEOS ======= */
+.videos{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;}
+.vid-card{background:var(--bg2);border:1px solid var(--border);border-radius:6px;overflow:hidden;cursor:pointer;transition:border-color .25s,transform .25s;}
+.vid-card:hover{border-color:var(--cyan);transform:translateY(-3px);}
+.vid-thumb{height:130px;background:var(--bg3);overflow:hidden;}
+.vid-thumb iframe{width:100%;height:100%;border:none;}
+.vid-body{padding:12px;}
+.vid-title{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--text);margin-bottom:4px;}
+.vid-desc{font-size:11px;color:var(--muted);line-height:1.6;}
+.no-vids{text-align:center;padding:32px;color:var(--muted);font-family:'DM Mono',monospace;font-size:12px;}
+
+/* ======= BOOKING ======= */
+.booking-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.booking-info{background:var(--bg2);border:1px solid var(--border2);border-radius:6px;padding:20px;}
+.bi-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:800;color:var(--text);margin-bottom:14px;}
+.service-options{display:flex;flex-direction:column;gap:8px;margin-bottom:16px;}
+.srv-opt{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;cursor:pointer;transition:border-color .2s;}
+.srv-opt:hover,.srv-opt.selected{border-color:var(--cyan);}
+.srv-opt-name{font-size:12px;color:var(--text);}
+.srv-opt-price{font-size:11px;color:var(--cyan);font-family:'DM Mono',monospace;}
+.booking-form{background:var(--bg2);border:1px solid var(--border2);border-radius:6px;padding:20px;}
+.book-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:800;color:var(--text);margin-bottom:14px;}
+.timeslots{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;}
+.slot{font-size:11px;padding:5px 10px;border:1px solid var(--border2);border-radius:4px;cursor:pointer;color:var(--soft);font-family:'DM Mono',monospace;transition:all .2s;}
+.slot:hover,.slot.sel{background:var(--cyan);color:#000;border-color:var(--cyan);}
+.slot.booked{background:var(--bg3);color:var(--muted);cursor:default;opacity:.5;}
+.my-bookings{background:var(--bg2);border:1px solid var(--border2);border-radius:6px;padding:16px;margin-top:14px;}
+.mb-title{font-size:10px;letter-spacing:2px;color:var(--cyan);text-transform:uppercase;margin-bottom:12px;font-family:'DM Mono',monospace;}
+.booking-row{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-bottom:1px solid var(--border);font-size:12px;}
+.booking-row:last-child{border-bottom:none;}
+.bk-service{color:var(--text);}
+.bk-date{color:var(--muted);font-family:'DM Mono',monospace;font-size:11px;}
+.bk-status{font-size:10px;padding:2px 8px;border-radius:20px;font-family:'DM Mono',monospace;}
+.bk-status.pending{background:var(--gf2);color:var(--gold);}
+.bk-status.confirmed{background:rgba(0,255,136,.15);color:var(--green);}
+.bk-status.cancelled{background:rgba(255,71,87,.15);color:var(--red);}
+
+/* ======= SERVICES ======= */
+.svcs{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:8px;}
+.svc{background:var(--bg2);border:1px solid var(--border);padding:18px 14px;border-radius:6px;transition:border-color .25s,transform .25s;cursor:pointer;}
+.svc:hover{border-color:var(--cyan);transform:translateY(-3px);}
+.svc-ic{font-size:18px;margin-bottom:10px;}
+.svc-t{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--text);margin-bottom:4px;}
+.svc-d{font-size:11px;color:var(--muted);line-height:1.7;}
+.svc-price{margin-top:8px;font-size:11px;color:var(--cyan);font-weight:500;font-family:'DM Mono',monospace;}
+
+/* ======= CERTS ======= */
+.certs{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;}
+.cert{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:15px;transition:border-color .25s,transform .25s;cursor:pointer;position:relative;overflow:hidden;}
+.cert:hover{border-color:var(--cyan);transform:translateY(-2px);}
+.cert::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--cyan);}
+.cert-ic{width:36px;height:36px;border-radius:50%;background:var(--cf);border:1px solid var(--cf2);display:flex;align-items:center;justify-content:center;font-size:15px;margin-bottom:9px;}
+.cert-n{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--text);margin-bottom:2px;}
+.cert-o{font-size:10px;color:var(--cyan);margin-bottom:3px;}
+.cert-y{font-size:10px;color:var(--muted);}
+.cert-ok{margin-top:7px;font-size:10px;color:var(--green);border-top:1px solid var(--border);padding-top:7px;}
+
+/* ======= TOOLS ======= */
+.tools-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(138px,1fr));gap:6px;}
+.tool{background:var(--bg2);border:1px solid var(--border);padding:9px 12px;border-radius:4px;display:flex;justify-content:space-between;align-items:center;transition:border-color .2s,transform .2s;}
+.tool:hover{border-color:var(--border2);transform:translateX(3px);}
+.tool-n{font-size:11px;color:var(--text);}
+.tool-l{font-size:10px;color:var(--cyan);font-weight:500;font-family:'DM Mono',monospace;}
+
+/* ======= PROJECTS ======= */
+.projs{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;}
+.proj{background:var(--bg2);border:1px solid var(--border);border-radius:6px;overflow:hidden;cursor:pointer;transition:border-color .25s,transform .25s;}
+.proj:hover{border-color:var(--cyan);transform:translateY(-3px);}
+.pimg{height:90px;display:flex;align-items:center;justify-content:center;font-size:24px;}
+.pimg.a{background:#c9a84c0d;}.pimg.b{background:#00d4ff0d;}.pimg.c{background:#00ff880d;}.pimg.d{background:#ff6b6b0d;}
+.pbody{padding:12px;}
+.ptag{font-size:10px;letter-spacing:2px;color:var(--cyan);text-transform:uppercase;margin-bottom:3px;font-family:'DM Mono',monospace;}
+.ptitle{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--text);margin-bottom:3px;}
+.pdesc{font-size:11px;color:var(--muted);line-height:1.6;}
+.pfoot{padding:8px 12px;border-top:1px solid var(--border);display:flex;justify-content:space-between;}
+.ptech{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;}
+.plink{font-size:10px;color:var(--cyan);cursor:pointer;}
+
+/* ======= PRICING ======= */
+.pricing-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:8px;}
+.plan{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:18px 15px;transition:border-color .25s,transform .25s;}
+.plan:hover{transform:translateY(-3px);}
+.plan.featured{border-color:var(--cyan);}
+.plan-badge{font-size:9px;letter-spacing:2px;color:#000;background:var(--cyan);padding:2px 8px;border-radius:2px;display:inline-block;margin-bottom:10px;text-transform:uppercase;font-family:'DM Mono',monospace;}
+.plan-name{font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:var(--text);margin-bottom:4px;}
+.plan-price{font-family:'DM Mono',monospace;font-size:22px;font-weight:500;color:var(--cyan);}
+.plan-per{font-size:10px;color:var(--muted);margin-bottom:12px;font-family:'DM Mono',monospace;}
+.plan-items{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;}
+.pli{font-size:11px;color:var(--soft);display:flex;gap:5px;}
+.pli::before{content:'>';color:var(--cyan);font-size:10px;flex-shrink:0;font-family:'DM Mono',monospace;}
+.plan-btn{width:100%;padding:9px;border-radius:2px;font-size:10px;font-weight:500;letter-spacing:2px;text-transform:uppercase;cursor:pointer;text-align:center;font-family:'DM Mono',monospace;}
+.plan-btn.solid{background:var(--cyan);color:#000;border:none;}
+.plan-btn.outline{background:transparent;color:var(--cyan);border:1px solid var(--border2);}
+
+/* ======= REVIEWS ======= */
+.revs{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:8px;}
+.rev{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:15px;transition:border-color .25s,transform .25s;}
+.rev:hover{border-color:var(--border2);transform:translateY(-2px);}
+.rev-stars{color:var(--gold);font-size:12px;margin-bottom:8px;}
+.rev-txt{font-size:12px;color:var(--soft);line-height:1.8;font-style:italic;margin-bottom:10px;}
+.rev-auth{display:flex;align-items:center;gap:9px;}
+.rev-av{width:30px;height:30px;border-radius:50%;background:var(--cf);border:1px solid var(--cf2);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:var(--cyan);}
+.rev-name{font-size:12px;color:var(--text);font-weight:500;}
+.rev-role{font-size:10px;color:var(--muted);}
+
+/* ======= BLOG ======= */
+.blogs{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:8px;}
+.blog{background:var(--bg2);border:1px solid var(--border);border-radius:6px;overflow:hidden;cursor:pointer;transition:border-color .25s,transform .25s;}
+.blog:hover{border-color:var(--cyan);transform:translateY(-3px);}
+.blog-img{height:80px;display:flex;align-items:center;justify-content:center;font-size:22px;}
+.blog-img.b1{background:#c9a84c0d;}.blog-img.b2{background:#00d4ff0d;}.blog-img.b3{background:#00ff880d;}.blog-img.b4{background:#7f77dd0d;}
+.blog-body{padding:12px;}
+.blog-cat{font-size:10px;letter-spacing:2px;color:var(--cyan);text-transform:uppercase;margin-bottom:3px;font-family:'DM Mono',monospace;}
+.blog-title{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--text);margin-bottom:4px;line-height:1.4;}
+.blog-meta{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;}
+.blog-read{margin-top:7px;font-size:10px;color:var(--cyan);border-top:1px solid var(--border);padding-top:7px;font-family:'DM Mono',monospace;}
+
+/* ======= FAQ ======= */
+.faq{display:flex;flex-direction:column;gap:2px;}
+.faq-item{background:var(--bg2);border:1px solid var(--border);border-radius:4px;overflow:hidden;}
+.faq-q{padding:12px 14px;font-size:12px;color:var(--text);cursor:pointer;display:flex;justify-content:space-between;align-items:center;}
+.faq-q:hover{color:var(--cyan);}
+.faq-ico{font-size:14px;color:var(--cyan);flex-shrink:0;font-family:'DM Mono',monospace;}
+.faq-a{padding:0 14px 12px;font-size:12px;color:var(--soft);line-height:1.8;display:none;}
+
+/* ======= CONTACT ======= */
+.contact-box{background:var(--bg2);border:1px solid var(--border2);border-radius:6px;padding:32px 24px;margin:0 24px 14px;}
+.contact-inner{display:grid;grid-template-columns:1fr 1fr;gap:32px;}
+.ct-title{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--text);margin-bottom:6px;}
+.ct-sub{font-size:12px;color:var(--muted);margin-bottom:16px;line-height:1.7;}
+.ct-items{display:flex;flex-direction:column;gap:9px;}
+.ct-item{display:flex;align-items:center;gap:10px;text-decoration:none;}
+.ct-ic{width:32px;height:32px;border-radius:50%;background:var(--cf);border:1px solid var(--cf2);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+.ct-item:hover .ct-ic{background:var(--cf2);}
+.ct-lbl{font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;font-family:'DM Mono',monospace;}
+.ct-val{font-size:12px;color:var(--text);transition:color .2s;font-family:'DM Mono',monospace;}
+.ct-item:hover .ct-val{color:var(--cyan);}
+.ct-form{display:flex;flex-direction:column;gap:8px;}
+.ci{background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:4px;font-size:12px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .2s;width:100%;}
+.ci:focus{border-color:var(--cyan);}
+.ci::placeholder{color:var(--muted);}
+.csend{background:var(--cyan);color:#000;font-size:10px;font-weight:500;letter-spacing:2px;padding:12px;border-radius:4px;cursor:pointer;text-transform:uppercase;border:none;font-family:'DM Mono',monospace;width:100%;}
+
+/* ======= SOCIALS ======= */
+.socials-strip{display:flex;gap:8px;padding:0 24px 32px;flex-wrap:wrap;}
+.soc-btn{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:4px;border:1px solid var(--border);background:var(--bg2);cursor:pointer;transition:border-color .2s,transform .2s;text-decoration:none;}
+.soc-btn:hover{border-color:var(--cyan);transform:translateY(-2px);}
+.soc-ic{font-size:14px;}
+.soc-label{font-size:11px;color:var(--text);font-weight:500;}
+.soc-handle{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;}
+
+/* ======= FOOTER ======= */
+.footer{background:var(--bg2);border-top:1px solid var(--border);padding:22px 24px;display:grid;grid-template-columns:1fr auto;gap:20px;align-items:center;}
+.fl-logo{font-family:'Syne',sans-serif;font-size:15px;font-weight:800;letter-spacing:2px;color:var(--cyan);margin-bottom:4px;}
+.fl-tagline{font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;}
+.fr{display:flex;flex-direction:column;align-items:flex-end;gap:8px;}
+.fsocs{display:flex;gap:14px;flex-wrap:wrap;justify-content:flex-end;}
+.fsoc{font-size:10px;letter-spacing:1px;color:var(--muted);cursor:pointer;text-transform:uppercase;transition:color .2s;text-decoration:none;font-family:'DM Mono',monospace;}
+.fsoc:hover{color:var(--cyan);}
+.fcopy{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;}
+
+/* ======= USER DASHBOARD MODAL ======= */
+.dashboard-box{background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:0;width:100%;max-width:700px;max-height:88vh;overflow:hidden;display:flex;flex-direction:column;}
+.db-head{padding:20px 24px;border-bottom:1px solid var(--border2);display:flex;justify-content:space-between;align-items:center;flex-shrink:0;}
+.db-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:var(--text);}
+.db-tabs{display:flex;gap:6px;overflow-x:auto;padding:14px 24px 0;flex-shrink:0;}
+.db-tab{padding:7px 14px;border-radius:4px 4px 0 0;font-size:10px;font-weight:500;letter-spacing:2px;text-transform:uppercase;cursor:pointer;color:var(--muted);font-family:'DM Mono',monospace;border:1px solid var(--border);border-bottom:none;white-space:nowrap;transition:all .2s;}
+.db-tab.active{background:var(--bg3);color:var(--cyan);border-color:var(--border2);}
+.db-body{flex:1;overflow-y:auto;padding:20px 24px;}
+.db-body::-webkit-scrollbar{width:4px;}
+.db-body::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+.db-panel{display:none;}
+.db-panel.active{display:block;}
+.profile-header{display:flex;align-items:center;gap:16px;margin-bottom:20px;padding:16px;background:var(--bg3);border-radius:6px;border:1px solid var(--border);}
+.profile-av{width:56px;height:56px;border-radius:50%;background:var(--cf2);border:2px solid var(--cyan);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--cyan);}
+.profile-name{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--text);}
+.profile-email{font-size:12px;color:var(--muted);font-family:'DM Mono',monospace;margin-top:2px;}
+.profile-role-badge{display:inline-block;font-size:10px;padding:2px 10px;border-radius:20px;margin-top:4px;font-family:'DM Mono',monospace;}
+.role-admin{background:var(--gf2);color:var(--gold);}
+.role-user{background:var(--cf);color:var(--cyan);}
+.profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.profile-stat{background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:12px;text-align:center;}
+.profile-stat-num{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--cyan);}
+.profile-stat-lbl{font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-top:2px;font-family:'DM Mono',monospace;}
+.notification{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;margin-bottom:7px;}
+.notif-ic{font-size:16px;flex-shrink:0;}
+.notif-txt{font-size:12px;color:var(--soft);line-height:1.6;}
+.notif-time{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;margin-top:2px;}
+
+/* ======= PRIVATE CHAT (in dashboard) ======= */
+.pchat-wrap{display:flex;flex-direction:column;height:340px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;overflow:hidden;}
+.pchat-msgs{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;}
+.pchat-msgs::-webkit-scrollbar{width:3px;}
+.pchat-msgs::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+.pchat-msg{display:flex;flex-direction:column;max-width:85%;}
+.pchat-msg.admin{align-self:flex-start;}
+.pchat-msg.user{align-self:flex-end;align-items:flex-end;}
+.pchat-bubble{padding:8px 12px;border-radius:4px;font-size:12px;line-height:1.6;}
+.pchat-msg.admin .pchat-bubble{background:var(--bg4);color:var(--soft);border:1px solid var(--border);border-radius:0 8px 8px 8px;}
+.pchat-msg.user .pchat-bubble{background:var(--cyan);color:#000;border-radius:8px 8px 0 8px;}
+.pchat-time{font-size:9px;color:var(--muted);margin-top:2px;font-family:'DM Mono',monospace;}
+.pchat-foot{display:flex;gap:7px;padding:9px;border-top:1px solid var(--border);background:var(--bg2);}
+.pchat-input{flex:1;background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:4px;font-size:12px;font-family:'DM Sans',sans-serif;outline:none;}
+.pchat-input:focus{border-color:var(--cyan);}
+.pchat-input::placeholder{color:var(--muted);}
+.pchat-send{background:var(--cyan);color:#000;border:none;padding:8px 14px;border-radius:4px;cursor:pointer;font-size:12px;}
+.pchat-admin-label{padding:7px 12px;background:var(--gf);border-bottom:1px solid var(--border);font-size:10px;color:var(--gold);font-family:'DM Mono',monospace;display:flex;justify-content:space-between;}
+
+/* ======= ADMIN PANEL MODAL ======= */
+.admin-box{background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:0;width:100%;max-width:800px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;}
+.admin-head{padding:18px 22px;border-bottom:1px solid var(--border2);display:flex;justify-content:space-between;align-items:center;flex-shrink:0;}
+.admin-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:var(--cyan);}
+.admin-tabs{display:flex;gap:5px;overflow-x:auto;padding:12px 22px 0;flex-shrink:0;}
+.admin-tab{padding:6px 14px;border-radius:4px 4px 0 0;font-size:10px;font-weight:500;letter-spacing:2px;text-transform:uppercase;cursor:pointer;color:var(--muted);font-family:'DM Mono',monospace;border:1px solid var(--border);border-bottom:none;white-space:nowrap;}
+.admin-tab.active{background:var(--bg3);color:var(--cyan);border-color:var(--border2);}
+.admin-body{flex:1;overflow-y:auto;padding:18px 22px;}
+.admin-body::-webkit-scrollbar{width:4px;}
+.admin-body::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+.admin-panel{display:none;}
+.admin-panel.active{display:block;}
+.admin-grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.admin-card{background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:16px;}
+.admin-card-title{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--text);margin-bottom:12px;}
+.astat{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px;}
+.astat:last-child{border-bottom:none;}
+.astat-k{color:var(--soft);}
+.astat-v{color:var(--cyan);font-family:'DM Mono',monospace;}
+.user-row{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-bottom:1px solid var(--border);font-size:12px;}
+.user-row:last-child{border-bottom:none;}
+.user-email-txt{color:var(--text);font-family:'DM Mono',monospace;font-size:11px;}
+.role-badge{font-size:9px;padding:2px 8px;border-radius:20px;font-family:'DM Mono',monospace;}
+.role-badge.admin{background:var(--gf2);color:var(--gold);}
+.role-badge.user{background:var(--cf);color:var(--cyan);}
+.del-btn{background:var(--red);color:#fff;border:none;padding:3px 8px;border-radius:3px;cursor:pointer;font-size:10px;font-family:'DM Mono',monospace;}
+.booking-admin-row{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-bottom:1px solid var(--border);font-size:12px;flex-wrap:wrap;gap:4px;}
+.booking-admin-row:last-child{border-bottom:none;}
+.bk-info{flex:1;}
+.bk-user{color:var(--text);font-size:11px;font-family:'DM Mono',monospace;}
+.bk-detail{color:var(--muted);font-size:11px;}
+.bk-action-btns{display:flex;gap:5px;}
+.confirm-btn{background:rgba(0,255,136,.2);color:var(--green);border:1px solid var(--green);padding:3px 8px;border-radius:3px;cursor:pointer;font-size:10px;font-family:'DM Mono',monospace;}
+.reject-btn{background:rgba(255,71,87,.15);color:var(--red);border:1px solid var(--red);padding:3px 8px;border-radius:3px;cursor:pointer;font-size:10px;font-family:'DM Mono',monospace;}
+.admin-chat-list{display:flex;flex-direction:column;gap:8px;max-height:300px;overflow-y:auto;}
+.admin-chat-item{background:var(--bg4);border:1px solid var(--border);border-radius:4px;padding:10px;cursor:pointer;transition:border-color .2s;}
+.admin-chat-item:hover,.admin-chat-item.active{border-color:var(--cyan);}
+.aci-email{font-size:12px;color:var(--text);font-family:'DM Mono',monospace;}
+.aci-preview{font-size:11px;color:var(--muted);margin-top:2px;}
+.aci-unread{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--cyan);margin-left:6px;}
+.admin-chat-reply{margin-top:12px;}
+.video-list-admin{display:flex;flex-direction:column;gap:6px;max-height:200px;overflow-y:auto;margin-top:10px;}
+.vla-item{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:var(--bg4);border-radius:4px;border:1px solid var(--border);}
+.vla-title{font-size:12px;color:var(--text);}
+.vla-url{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;}
+
+/* ======= AI CHATBOT ======= */
+.chat-fab{position:fixed;bottom:20px;right:20px;z-index:300;}
+.chat-btn{width:50px;height:50px;background:var(--cyan);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:20px;transition:transform .2s;box-shadow:0 4px 20px rgba(0,212,255,.3);}
+.chat-btn:hover{transform:scale(1.1);}
+.chat-notif{position:absolute;top:-3px;right:-3px;width:15px;height:15px;background:var(--red);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff;font-weight:700;}
+.chat-win{position:fixed;bottom:80px;right:20px;width:310px;background:var(--bg2);border:1px solid var(--border2);border-radius:12px;overflow:hidden;z-index:300;display:none;box-shadow:0 20px 60px rgba(0,0,0,.6);}
+.chat-win-head{background:linear-gradient(135deg,#0d1a2e,#0a1628);padding:12px 14px;border-bottom:1px solid var(--border2);display:flex;justify-content:space-between;align-items:center;}
+.cwh-left{display:flex;align-items:center;gap:9px;}
+.cwh-av{width:32px;height:32px;border-radius:50%;background:var(--cf2);border:2px solid var(--cyan);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:11px;font-weight:800;color:var(--cyan);position:relative;}
+.cwh-online{position:absolute;bottom:0;right:0;width:8px;height:8px;background:var(--green);border-radius:50%;border:2px solid var(--bg2);}
+.cwh-name{font-family:'Syne',sans-serif;font-size:12px;font-weight:800;color:var(--text);}
+.cwh-status{font-size:10px;color:var(--green);font-family:'DM Mono',monospace;}
+.cwh-right{display:flex;gap:5px;}
+.cwh-btn{width:25px;height:25px;border-radius:50%;background:var(--cf);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:11px;}
+.cwh-btn:hover{background:var(--cf2);}
+.chat-banner{background:var(--cf);border-bottom:1px solid var(--border);padding:8px 12px;font-size:11px;color:var(--soft);}
+.chat-banner strong{color:var(--cyan);}
+.chat-msgs-wrap{height:230px;overflow-y:auto;padding:11px;display:flex;flex-direction:column;gap:8px;background:var(--bg);}
+.chat-msgs-wrap::-webkit-scrollbar{width:3px;}
+.chat-msgs-wrap::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+.cmsg{display:flex;flex-direction:column;max-width:86%;animation:msgIn .3s ease;}
+.cmsg.bot{align-self:flex-start;}
+.cmsg.user{align-self:flex-end;align-items:flex-end;}
+.cmsg-row{display:flex;align-items:flex-end;gap:6px;}
+.cmsg.bot .cmsg-row{flex-direction:row;}
+.cmsg.user .cmsg-row{flex-direction:row-reverse;}
+.cmsg-av{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-family:'Syne',sans-serif;font-weight:800;flex-shrink:0;}
+.cmsg.bot .cmsg-av{background:var(--cf2);color:var(--cyan);border:1px solid var(--border2);}
+.cmsg.user .cmsg-av{background:var(--cyan);color:#000;}
+.cmsg-bubble{padding:8px 11px;border-radius:4px;font-size:12px;line-height:1.6;}
+.cmsg.bot .cmsg-bubble{background:var(--bg3);color:var(--soft);border:1px solid var(--border);border-radius:0 8px 8px 8px;}
+.cmsg.user .cmsg-bubble{background:var(--cyan);color:#000;border-radius:8px 8px 0 8px;}
+.cmsg-time{font-size:9px;color:var(--muted);margin-top:2px;font-family:'DM Mono',monospace;}
+.cmsg-link{color:var(--cyan);text-decoration:none;}
+.cmsg.user .cmsg-link{color:#000;}
+.ctyping{display:flex;gap:4px;align-items:center;padding:8px 11px;background:var(--bg3);border:1px solid var(--border);border-radius:0 8px 8px 8px;width:42px;}
+.ctyping span{width:5px;height:5px;background:var(--cyan);border-radius:50%;animation:bounce .8s infinite;opacity:.6;}
+.ctyping span:nth-child(2){animation-delay:.15s;}
+.ctyping span:nth-child(3){animation-delay:.3s;}
+.chat-qbtns{display:flex;flex-wrap:wrap;gap:4px;padding:7px 9px;border-top:1px solid var(--border);background:var(--bg2);}
+.qbtn{font-size:10px;padding:3px 8px;border:1px solid var(--border2);color:var(--cyan);border-radius:20px;cursor:pointer;transition:all .2s;font-family:'DM Mono',monospace;}
+.qbtn:hover{background:var(--cyan);color:#000;}
+.chat-foot-wrap{padding:8px;border-top:1px solid var(--border);display:flex;gap:6px;background:var(--bg2);}
+.chat-in-box{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:5px;display:flex;align-items:center;padding:0 9px;transition:border-color .2s;}
+.chat-in-box:focus-within{border-color:var(--cyan);}
+.chat-in{flex:1;background:transparent;border:none;color:var(--text);padding:8px 0;font-size:12px;font-family:'DM Sans',sans-serif;outline:none;}
+.chat-in::placeholder{color:var(--muted);}
+.chat-snd{width:30px;height:30px;background:var(--cyan);color:#000;border:none;border-radius:4px;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.chat-powered{padding:5px 10px;background:var(--bg2);border-top:1px solid var(--border);display:flex;justify-content:space-between;font-size:9px;color:var(--muted);font-family:'DM Mono',monospace;}
+.chat-powered em{color:var(--cyan);font-style:normal;}
+
+/* ======= TIMELINE ======= */
+.tl{display:flex;flex-direction:column;}
+.tl-item{display:flex;gap:16px;padding:14px 0;border-bottom:1px solid var(--border);}
+.tl-item:last-child{border-bottom:none;}
+.tl-dot{width:11px;height:11px;border-radius:50%;border:2px solid var(--cyan);background:var(--bg);flex-shrink:0;margin-top:4px;}
+.tl-dot.active{background:var(--cyan);}
+.tl-yr{font-size:10px;color:var(--cyan);letter-spacing:2px;margin-bottom:2px;font-family:'DM Mono',monospace;}
+.tl-title{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px;}
+.tl-org{font-size:11px;color:var(--muted);margin-bottom:4px;}
+.tl-desc{font-size:11px;color:var(--soft);line-height:1.7;}
+
+/* ======= RESPONSIVE ======= */
+@media(max-width:640px){
+  .nav-links a{display:none;}
+  .hname{font-size:34px;}
+  .hero-right{display:none;}
+  .stats{grid-template-columns:repeat(2,1fr);}
+  .about-main,.contact-inner,.booking-grid,.loc-inner,.admin-grid2,.profile-grid{grid-template-columns:1fr;}
+  .about-info-row{grid-template-columns:repeat(2,1fr);}
+  .footer{grid-template-columns:1fr;}
+  .fr{align-items:flex-start;}
+  canvas#hc{height:250px;}
+  .chat-win{width:calc(100vw - 32px);right:16px;}
+  .dashboard-box,.admin-box{max-width:98vw;margin:8px;}
+}
+
+@keyframes fu{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+@keyframes fi{from{opacity:0;}to{opacity:1;}}
+@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+@keyframes bounce{0%,100%{transform:translateY(0);opacity:.6}50%{transform:translateY(-4px);opacity:1}}
+@keyframes msgIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+@keyframes toastIn{from{opacity:0;transform:translateX(20px);}to{opacity:1;transform:translateX(0);}}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:0;}}
+
+/* REVIEW SYSTEM */
+.rev-form-box{background:var(--bg2);border:1px solid var(--border2);border-radius:6px;padding:20px;margin-bottom:16px;position:relative;overflow:hidden;}
+.rev-form-box::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--cyan),var(--gold));}
+.rev-form-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--text);margin-bottom:14px;}
+.star-sel{display:flex;gap:6px;margin-bottom:12px;}
+.star-btn{font-size:24px;cursor:pointer;color:var(--muted);transition:color .15s,transform .15s;background:none;border:none;}
+.star-btn:hover,.star-btn.on{color:var(--gold);transform:scale(1.2);}
+.urev{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:14px;margin-bottom:8px;animation:msgIn .3s ease;}
+.urev-hd{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;}
+.urev-auth{display:flex;align-items:center;gap:9px;}
+.urev-av{width:30px;height:30px;border-radius:50%;background:var(--cf2);border:1px solid var(--cf);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:var(--cyan);}
+.urev-name{font-size:12px;color:var(--text);font-weight:500;}
+.urev-date{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;}
+.urev-stars{color:var(--gold);font-size:12px;margin-bottom:5px;}
+.urev-txt{font-size:12px;color:var(--soft);line-height:1.7;}
+.urev-pending{display:inline-block;font-size:10px;color:var(--gold);font-family:'DM Mono',monospace;margin-top:5px;background:var(--gf);padding:2px 8px;border-radius:20px;}
+.urev-del{background:var(--red);color:#fff;border:none;padding:2px 7px;border-radius:3px;cursor:pointer;font-size:10px;font-family:'DM Mono',monospace;}
+.rev-tabs{display:flex;gap:8px;margin-bottom:16px;}
+.rev-tab{font-size:10px;padding:5px 12px;border:1px solid var(--border2);border-radius:20px;cursor:pointer;color:var(--muted);font-family:'DM Mono',monospace;transition:all .2s;}
+.rev-tab.active{background:var(--cyan);color:#000;border-color:var(--cyan);}
+.rev-avg{display:flex;align-items:center;gap:12px;padding:14px;background:var(--bg3);border-radius:6px;margin-bottom:14px;}
+.rev-avg-num{font-family:'Syne',sans-serif;font-size:36px;font-weight:800;color:var(--gold);}
+.rev-avg-stars{color:var(--gold);font-size:16px;}
+.rev-avg-count{font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;}
+
+/* PAYMENT */
+.pay-box{background:var(--bg2);border:1px solid var(--border2);border-radius:6px;padding:20px;margin-top:14px;}
+.pay-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--text);margin-bottom:14px;}
+.pay-methods{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.pay-opt{background:var(--bg3);border:2px solid var(--border);border-radius:6px;padding:14px;cursor:pointer;transition:all .2s;text-align:center;}
+.pay-opt:hover,.pay-opt.sel{border-color:var(--cyan);transform:translateY(-2px);}
+.pay-ic{font-size:24px;margin-bottom:6px;}
+.pay-name{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--text);}
+.pay-num{font-size:11px;color:var(--cyan);font-family:'DM Mono',monospace;margin-top:3px;}
+.pay-inst{background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:14px;margin-bottom:12px;display:none;}
+.pay-inst.show{display:block;}
+.pay-step-line{font-size:12px;color:var(--soft);line-height:2;font-family:'DM Mono',monospace;}
+.pay-step-line strong{color:var(--cyan);}
+.trx-in{width:100%;background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:4px;font-size:13px;font-family:'DM Mono',monospace;outline:none;transition:border-color .2s;letter-spacing:2px;}
+.trx-in:focus{border-color:var(--cyan);}
+.trx-in::placeholder{color:var(--muted);}
+
+/* CERTIFICATES */
+.cert-mgr{background:var(--bg2);border:1px solid var(--border2);border-radius:6px;padding:20px;}
+.cert-mgr-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--text);margin-bottom:14px;}
+.cert-drop{border:2px dashed var(--border2);border-radius:6px;padding:24px;text-align:center;cursor:pointer;transition:border-color .2s;margin-bottom:12px;}
+.cert-drop:hover{border-color:var(--cyan);background:var(--cf);}
+.cert-drop-ic{font-size:28px;margin-bottom:8px;}
+.cert-drop-txt{font-size:12px;color:var(--soft);}
+.cert-drop-sub{font-size:10px;color:var(--muted);margin-top:4px;font-family:'DM Mono',monospace;}
+.cert-grid-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-top:12px;}
+.ucert{background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:12px;text-align:center;position:relative;transition:border-color .2s;}
+.ucert:hover{border-color:var(--cyan);}
+.ucert-ic{font-size:26px;margin-bottom:6px;}
+.ucert-nm{font-size:11px;color:var(--text);font-family:'DM Mono',monospace;word-break:break-all;line-height:1.4;}
+.ucert-del{position:absolute;top:5px;right:5px;background:var(--red);color:#fff;border:none;border-radius:50%;width:17px;height:17px;font-size:9px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.ucert-dl{margin-top:7px;font-size:10px;color:var(--cyan);cursor:pointer;font-family:'DM Mono',monospace;text-decoration:underline;}
+
+/* TERMINAL */
+.term-box{background:#04080f;border:1px solid var(--border2);border-radius:6px;overflow:hidden;margin-bottom:14px;}
+.term-bar{background:#0a0a0a;padding:8px 14px;display:flex;align-items:center;gap:6px;border-bottom:1px solid #1a1a1a;}
+.td{width:10px;height:10px;border-radius:50%;}
+.td-r{background:#ff5f57;}.td-y{background:#febc2e;}.td-g{background:#28c840;}
+.term-title-txt{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;margin:0 auto;}
+.term-body{padding:16px;font-family:'DM Mono',monospace;font-size:12px;line-height:2;}
+.tl{display:flex;gap:8px;align-items:flex-start;}
+.tp{color:var(--cyan);flex-shrink:0;user-select:none;}
+.tc{color:var(--text);}
+.to{color:var(--soft);}
+.ts{color:var(--green);}
+.te{color:var(--red);}
+.tw{color:var(--gold);}
+.tcur{display:inline-block;width:8px;height:14px;background:var(--cyan);animation:blink 1s step-end infinite;vertical-align:middle;margin-left:2px;}
+
+/* TOAST */
+.toast-wrap{position:fixed;top:60px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none;max-width:320px;}
+.toast{background:var(--bg2);border:1px solid var(--border2);border-radius:6px;padding:12px 14px;pointer-events:all;animation:toastIn .3s ease;display:flex;align-items:flex-start;gap:10px;box-shadow:0 8px 32px rgba(0,0,0,.5);position:relative;overflow:hidden;}
+.toast::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.toast.ok::before{background:var(--green);}
+.toast.inf::before{background:var(--cyan);}
+.toast.wrn::before{background:var(--gold);}
+.toast-ic{font-size:16px;flex-shrink:0;}
+.toast-msg{font-size:12px;color:var(--text);line-height:1.5;flex:1;}
+.toast-x{font-size:14px;color:var(--muted);cursor:pointer;flex-shrink:0;}
+
+/* TG BADGE */
+.tg-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(41,182,246,.15);border:1px solid rgba(41,182,246,.3);border-radius:20px;padding:4px 12px;font-size:11px;color:#29b6f6;font-family:'DM Mono',monospace;}
+</style>
+</head>
+<body>
+
+<!-- ======= AUTH OVERLAY ======= -->
+<div class="overlay" id="authOverlay">
+  <div class="modal-box">
+    <div class="modal-logo">KI.</div>
+    <div class="modal-sub">// Khairul Islam · Portfolio</div>
+    <div class="auth-tabs">
+      <div class="auth-tab active" id="lTab" onclick="switchTab('l')">Login</div>
+      <div class="auth-tab" id="sTab" onclick="switchTab('s')">Sign Up</div>
+    </div>
+    <div id="lForm">
+      <div class="form-field"><label>Email</label><input type="email" id="lEmail" placeholder="your@email.com" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+      <div class="form-field"><label>Password</label><input type="password" id="lPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+      <button class="btn-primary" onclick="doLogin()">Login →</button>
+    </div>
+    <div id="sForm" style="display:none;">
+      <div class="form-field"><label>Name</label><input type="text" id="sName" placeholder="তোমার নাম"/></div>
+      <div class="form-field"><label>Email</label><input type="email" id="sEmail" placeholder="your@email.com"/></div>
+      <div class="form-field"><label>Password</label><input type="password" id="sPass" placeholder="Min 6 characters"/></div>
+      <button class="btn-primary" onclick="doSignup()">Create Account →</button>
+    </div>
+    <div class="form-err" id="authErr"></div>
+    <div class="skip-link" onclick="skipAuth()">// Guest হিসেবে দেখুন →</div>
+  </div>
+</div>
+
+<!-- ======= TOP BAR ======= -->
+<div id="topBar">
+  <div class="tb-left">// <span id="tbEmail">guest</span></div>
+  <div class="tb-right">
+    <button class="tb-btn admin" id="adminBtn" onclick="openAdmin()" style="display:none;">⚙ Admin</button>
+    <button class="tb-btn dashboard" id="dashBtn" onclick="openDashboard()" style="display:none;">👤 Dashboard</button>
+    <button class="tb-btn logout" onclick="doLogout()">Logout</button>
+  </div>
+</div>
+
+<!-- ======= ADMIN MODAL ======= -->
+<div class="overlay" id="adminOverlay" style="display:none;">
+  <div class="admin-box">
+    <div class="admin-head">
+      <div class="admin-title">⚙️ Admin Dashboard</div>
+      <div class="modal-close" onclick="closeAdmin()">✕</div>
+    </div>
+    <div class="admin-tabs">
+      <div class="admin-tab active" onclick="switchAdminTab('stats')">📊 Stats</div>
+      <div class="admin-tab" onclick="switchAdminTab('users')">👥 Users</div>
+      <div class="admin-tab" onclick="switchAdminTab('bookings')">📅 Bookings</div>
+      <div class="admin-tab" onclick="switchAdminTab('videos')">🎬 Videos</div>
+      <div class="admin-tab" onclick="switchAdminTab('reviews')">⭐ Reviews</div>
+      <div class="admin-tab" onclick="switchAdminTab('chats')">💬 Chats</div>
+      <div class="admin-tab" onclick="switchAdminTab('settings')">⚙️ Settings</div>
+    </div>
+    <div class="admin-body">
+      <div class="admin-panel active" id="ap-stats">
+        <div class="admin-grid2">
+          <div class="admin-card">
+            <div class="admin-card-title">📊 Site Statistics</div>
+            <div class="astat"><span class="astat-k">Total Users</span><span class="astat-v" id="as-users">0</span></div>
+            <div class="astat"><span class="astat-k">Total Bookings</span><span class="astat-v" id="as-bookings">0</span></div>
+            <div class="astat"><span class="astat-k">Pending Bookings</span><span class="astat-v" id="as-pending">0</span></div>
+            <div class="astat"><span class="astat-k">Videos Added</span><span class="astat-v" id="as-videos">0</span></div>
+            <div class="astat"><span class="astat-k">Chat Conversations</span><span class="astat-v" id="as-chats">0</span></div>
+          </div>
+          <div class="admin-card">
+            <div class="admin-card-title">🔑 Admin Credentials</div>
+            <div class="astat"><span class="astat-k">Email</span><span class="astat-v" id="showAdminEmail"></span></div>
+            <div class="astat"><span class="astat-k">Password</span><span class="astat-v" style="color:var(--green);">●●●●●●●● (hidden)</span></div>
+            <div class="astat"><span class="astat-k">Role</span><span class="astat-v">Super Admin</span></div>
+            <div style="margin-top:12px;">
+              <div class="form-field"><label>New Admin Password</label><input type="password" id="newAdminPass" placeholder="নতুন পাসওয়ার্ড"/></div>
+              <button class="btn-outline" style="width:auto;padding:7px 14px;" onclick="changeAdminPass()">Update Password</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="admin-panel" id="ap-users">
+        <div class="admin-card">
+          <div class="admin-card-title">👥 Registered Users</div>
+          <div id="adminUserList"></div>
+        </div>
+      </div>
+      <div class="admin-panel" id="ap-bookings">
+        <div class="admin-card">
+          <div class="admin-card-title">📅 All Bookings</div>
+          <div id="adminBookingList"></div>
+        </div>
+      </div>
+      <div class="admin-panel" id="ap-videos">
+        <div class="admin-card">
+          <div class="admin-card-title">🎬 Add Video Content</div>
+          <div class="form-field"><label>Title</label><input type="text" id="vTitle" placeholder="ভিডিও টাইটেল"/></div>
+          <div class="form-field"><label>YouTube URL</label><input type="text" id="vUrl" placeholder="https://youtube.com/watch?v=... অথবা embed URL"/></div>
+          <div class="form-field"><label>Description</label><textarea id="vDesc" placeholder="সংক্ষিপ্ত বিবরণ..." style="min-height:60px;"></textarea></div>
+          <div class="form-field">
+            <label>Access</label>
+            <select id="vAccess" style="background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:10px;border-radius:4px;width:100%;outline:none;font-size:12px;">
+              <option value="public">🌐 সবার জন্য (Public)</option>
+              <option value="members">🔐 Logged-in Members Only</option>
+            </select>
+          </div>
+          <button class="btn-primary" onclick="addVideo()">+ ভিডিও যোগ করুন</button>
+          <div class="video-list-admin" id="adminVideoList"></div>
+        </div>
+      </div>
+      <div class="admin-panel" id="ap-reviews">
+        <div class="admin-card">
+          <div class="admin-card-title">⭐ Pending Reviews — Approve করো</div>
+          <div id="adminReviewList"></div>
+        </div>
+      </div>
+      <div class="admin-panel" id="ap-chats">
+        <div class="admin-card">
+          <div class="admin-card-title">💬 User Messages</div>
+          <div class="admin-chat-list" id="adminChatList"></div>
+          <div class="admin-chat-reply" id="adminChatReply" style="display:none;">
+            <div style="font-size:11px;color:var(--cyan);margin-bottom:8px;font-family:'DM Mono',monospace;" id="replyingTo"></div>
+            <div style="display:flex;gap:7px;">
+              <input class="pchat-input" id="adminReplyInput" placeholder="Reply লিখুন..." onkeydown="if(event.key==='Enter')sendAdminReply()"/>
+              <button class="pchat-send" onclick="sendAdminReply()">➤</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="admin-panel" id="ap-settings">
+        <div class="admin-grid2">
+          <div class="admin-card">
+            <div class="admin-card-title">⚙️ Site Settings</div>
+            <div class="form-field"><label>Availability</label>
+              <select id="setStatus" style="background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:10px;border-radius:4px;width:100%;outline:none;font-size:12px;">
+                <option value="available">✅ Available</option>
+                <option value="busy">🔴 Busy</option>
+                <option value="partial">🟡 Partially Available</option>
+              </select>
+            </div>
+            <div class="form-field"><label>Professional Title</label><input type="text" id="setTitle" placeholder="Ethical Hacker & Developer"/></div>
+            <button class="btn-primary" onclick="saveSettings()">Save Settings</button>
+          </div>
+          <div class="admin-card">
+            <div class="admin-card-title">📢 Announcement</div>
+            <div class="form-field"><label>Message (shown to all users)</label><textarea id="announcement" placeholder="কোনো ঘোষণা থাকলে লিখুন..."></textarea></div>
+            <button class="btn-gold" onclick="saveAnnouncement()">Post Announcement</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ======= USER DASHBOARD MODAL ======= -->
+<div class="overlay" id="dashOverlay" style="display:none;">
+  <div class="dashboard-box">
+    <div class="db-head">
+      <div class="db-title">👤 My Dashboard</div>
+      <div class="modal-close" onclick="closeDashboard()">✕</div>
+    </div>
+    <div class="db-tabs">
+      <div class="db-tab active" onclick="switchDbTab('profile')">Profile</div>
+      <div class="db-tab" onclick="switchDbTab('bookings')">My Bookings</div>
+      <div class="db-tab" onclick="switchDbTab('messages')">Messages</div>
+      <div class="db-tab" onclick="switchDbTab('notifications')">Notifications</div>
+    </div>
+    <div class="db-body">
+      <div class="db-panel active" id="dp-profile">
+        <div class="profile-header">
+          <div class="profile-av" id="profileAv">K</div>
+          <div>
+            <div class="profile-name" id="profileName">User</div>
+            <div class="profile-email" id="profileEmail">user@email.com</div>
+            <div><span class="profile-role-badge role-user" id="profileRole">Member</span></div>
+          </div>
+        </div>
+        <div class="profile-grid">
+          <div class="profile-stat"><div class="profile-stat-num" id="ps-bookings">0</div><div class="profile-stat-lbl">Bookings</div></div>
+          <div class="profile-stat"><div class="profile-stat-num" id="ps-messages">0</div><div class="profile-stat-lbl">Messages</div></div>
+        </div>
+        <div class="admin-card" style="margin-top:12px;">
+          <div class="admin-card-title">✏️ Edit Profile</div>
+          <div class="form-field"><label>Name</label><input type="text" id="editName" placeholder="তোমার নাম"/></div>
+          <div class="form-field"><label>Phone</label><input type="text" id="editPhone" placeholder="+880..."/></div>
+          <div class="form-field"><label>New Password</label><input type="password" id="editPass" placeholder="নতুন পাসওয়ার্ড (optional)"/></div>
+          <button class="btn-primary" onclick="saveProfile()">Save Profile</button>
+        </div>
+      </div>
+      <div class="db-panel" id="dp-bookings">
+        <div class="my-bookings">
+          <div class="mb-title">// My Bookings</div>
+          <div id="myBookingsList"></div>
+        </div>
+      </div>
+      <div class="db-panel" id="dp-messages">
+        <div class="pchat-admin-label"><span>💬 Khairul Islam-এর সাথে Private Chat</span><span style="color:var(--green);">● Online</span></div>
+        <div class="pchat-wrap">
+          <div class="pchat-msgs" id="privateChatMsgs"></div>
+          <div class="pchat-foot">
+            <input class="pchat-input" id="privateChatInput" placeholder="বার্তা লিখুন..." onkeydown="if(event.key==='Enter')sendPrivateMsg()"/>
+            <button class="pchat-send" onclick="sendPrivateMsg()">➤</button>
+          </div>
+        </div>
+      </div>
+      <div class="db-panel" id="dp-notifications">
+        <div id="notificationList"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ======= MAIN SITE ======= -->
+<div id="mainSite" style="display:none;">
+
+<nav class="nav" id="mainNav">
+  <div class="nav-logo">KI<span>.</span></div>
+  <div class="nav-links">
+    <a href="#about">About</a>
+    <a href="#exclusive">Members</a>
+    <a href="#videos">Videos</a>
+    <a href="#booking">Booking</a>
+    <a href="#services">Services</a>
+    <a href="#work">Work</a>
+    <a href="#contact">Contact</a>
+    <div class="toggle" onclick="toggleTheme()"><div class="tdot"></div></div>
+  </div>
+  <div class="hire" onclick="window.open('https://t.me/Khairul_i','_blank')">Hire Me</div>
+</nav>
+
+<!-- ANNOUNCEMENT BAR -->
+<div id="announcementBar" style="display:none;background:linear-gradient(90deg,var(--gf2),var(--cf));padding:8px 20px;font-size:12px;color:var(--text);text-align:center;border-bottom:1px solid var(--border2);">
+  <span id="announcementText"></span>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <canvas id="hc"></canvas>
+  <div class="hero-ov">
+    <div class="hero-left">
+      <div class="hero-ey">Cybersecurity Expert & Full-Stack Developer</div>
+      <div class="hname">KHAIRUL<br><span>ISLAM</span></div>
+      <div class="hsub">// Ethical Hacker · Web Dev · Security Researcher</div>
+      <div class="hbtns">
+        <div class="hbtn1" onclick="window.open('https://bugcrowd.com/h/khairulislam5b75f040-4d84-4921-bd5a-8fdfbbb59ba7','_blank')">Bugcrowd</div>
+        <div class="hbtn2" onclick="window.open('https://github.com/bejoykhan80','_blank')">GitHub</div>
+        <div class="hbtn3" onclick="scrollToBooking()">📅 Book Now</div>
+      </div>
+      <div class="havail"><div class="hpulse"></div><div class="hpulse-txt" id="availTxt">// available for freelance projects</div></div>
+    </div>
+    <div class="hero-right">
+      <div class="hbadge"><div class="hbadge-num">5+</div><div class="hbadge-txt">Years<br>Expert</div></div>
+      <div class="hero-pills">
+        <div class="hpill">[CEH_v12]</div>
+        <div class="hpill">[OSCP]</div>
+        <div class="hpill">[Bugcrowd]</div>
+        <div class="hpill">[GitHub]</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="stats">
+  <div class="stat"><div class="snum" id="s1">0</div><div class="slbl">Projects Done</div></div>
+  <div class="stat"><div class="snum" id="s2">0</div><div class="slbl">Happy Clients</div></div>
+  <div class="stat"><div class="snum" id="s3">0</div><div class="slbl">CTF Wins</div></div>
+  <div class="stat"><div class="snum" id="s4">0%</div><div class="slbl">Success Rate</div></div>
+</div>
+
+<!-- ABOUT -->
+<div class="sec" id="about">
+  <div class="sec-hd"><div class="sec-tag">About Me</div><div class="sec-line"></div><div class="sec-num">01</div></div>
+  <div class="about-main">
+    <div class="acard">
+      <div class="about-txt">আমি <strong>Khairul Islam</strong> — একজন passionate Ethical Hacker ও Full-Stack Developer। ২০১৯ থেকে সাইবারসিকিউরিটি জগতে কাজ করছি।<br><br><strong>CEH, OSCP ও CompTIA Security+</strong> সার্টিফাইড। Bugcrowd-এ সক্রিয় bug bounty hunter। GitHub-এ open source contributor।</div>
+    </div>
+    <div class="acard">
+      <div class="rlbl">// skill_radar.exe</div>
+      <div class="rwrap"><canvas id="rc"></canvas></div>
+    </div>
+  </div>
+  <div class="about-info-row">
+    <div class="ainfo"><div class="ainfo-ic">📅</div><div class="ainfo-lbl">Experience</div><div class="ainfo-val">5+ বছর</div><div class="ainfo-sub">Since 2019</div></div>
+    <div class="ainfo"><div class="ainfo-ic">🔐</div><div class="ainfo-lbl">Speciality</div><div class="ainfo-val">Pen Testing</div><div class="ainfo-sub">& Web Dev</div></div>
+    <div class="ainfo"><div class="ainfo-ic">✅</div><div class="ainfo-lbl">Status</div><div class="ainfo-val" id="statusVal" style="color:var(--green);">Available</div><div class="ainfo-sub">Freelance Open</div></div>
+  </div>
+  <div class="bars-card">
+    <div class="blbl">// expertise_depth.scan</div>
+    <div class="sbs">
+      <div><div class="sb-top"><span class="sb-name">Penetration Testing</span><span class="sb-pct">98%</span></div><div class="sb-track"><div class="sb-fill c" data-w="98"></div></div></div>
+      <div><div class="sb-top"><span class="sb-name">Web App Security</span><span class="sb-pct">95%</span></div><div class="sb-track"><div class="sb-fill c" data-w="95"></div></div></div>
+      <div><div class="sb-top"><span class="sb-name">Network Security</span><span class="sb-pct">92%</span></div><div class="sb-track"><div class="sb-fill g" data-w="92"></div></div></div>
+      <div><div class="sb-top"><span class="sb-name">Full-Stack Dev</span><span class="sb-pct">88%</span></div><div class="sb-track"><div class="sb-fill g" data-w="88"></div></div></div>
+      <div><div class="sb-top"><span class="sb-name">OSINT & Forensics</span><span class="sb-pct">90%</span></div><div class="sb-track"><div class="sb-fill c" data-w="90"></div></div></div>
+      <div><div class="sb-top"><span class="sb-name">Python / Bash</span><span class="sb-pct">93%</span></div><div class="sb-track"><div class="sb-fill c" data-w="93"></div></div></div>
+    </div>
+  </div>
+  <div class="loc-card">
+    <div class="llbl">// location.trace</div>
+    <div class="loc-inner">
+      <div class="loc-map-wrap"><canvas id="mc" width="300" height="125"></canvas></div>
+      <div class="loc-details">
+        <div class="loc-row"><div class="loc-ic">🏙</div><div><div class="loc-k">City</div><div class="loc-v">Dhaka</div></div></div>
+        <div class="loc-row"><div class="loc-ic">🌍</div><div><div class="loc-k">Country</div><div class="loc-v">Bangladesh 🇧🇩</div></div></div>
+        <div class="loc-row"><div class="loc-ic">🕐</div><div><div class="loc-k">Timezone</div><div class="loc-v">GMT+6 (BST)</div></div></div>
+        <div class="loc-row"><div class="loc-ic">🌐</div><div><div class="loc-k">Work Mode</div><div class="loc-v">Remote / Worldwide</div></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- EXCLUSIVE MEMBERS CONTENT -->
+<div class="sec" id="exclusive" style="padding-top:0;">
+  <div class="sec-hd"><div class="sec-tag">Members Area</div><div class="sec-line"></div><div class="sec-num">02</div></div>
+  <div id="exclusiveContent"></div>
+</div>
+
+<!-- VIDEO CONTENT -->
+<div class="sec" id="videos" style="padding-top:0;">
+  <div class="sec-hd"><div class="sec-tag">Video Content</div><div class="sec-line"></div><div class="sec-num">03</div></div>
+  <div class="videos" id="videoGrid"><div class="no-vids">🎬 Admin এখনো ভিডিও যোগ করেননি।</div></div>
+</div>
+
+<!-- BOOKING -->
+<div class="sec" id="booking" style="padding-top:0;">
+  <div class="sec-hd"><div class="sec-tag">Book Appointment</div><div class="sec-line"></div><div class="sec-num">04</div></div>
+  <div id="bookingContent"></div>
+</div>
+
+<!-- SERVICES -->
+<div class="sec" id="services" style="padding-top:0;">
+  <div class="sec-hd"><div class="sec-tag">Services</div><div class="sec-line"></div><div class="sec-num">05</div></div>
+  <div class="svcs">
+    <div class="svc" onclick="scrollToBooking()"><div class="svc-ic">🔓</div><div class="svc-t">Penetration Testing</div><div class="svc-d">Web, network ও mobile pen testing।</div><div class="svc-price">৳১৫,০০০ থেকে</div></div>
+    <div class="svc" onclick="scrollToBooking()"><div class="svc-ic">💻</div><div class="svc-t">Web Development</div><div class="svc-d">আধুনিক, নিরাপদ ওয়েবসাইট।</div><div class="svc-price">৳২০,০০০ থেকে</div></div>
+    <div class="svc" onclick="scrollToBooking()"><div class="svc-ic">🔒</div><div class="svc-t">Security Audit</div><div class="svc-d">কোড ও সিকিউরিটি পর্যালোচনা।</div><div class="svc-price">৳১০,০০০ থেকে</div></div>
+    <div class="svc" onclick="scrollToBooking()"><div class="svc-ic">📡</div><div class="svc-t">Bug Bounty</div><div class="svc-d">Bugcrowd-এ সক্রিয়।</div><div class="svc-price">Custom</div></div>
+    <div class="svc" onclick="scrollToBooking()"><div class="svc-ic">🎓</div><div class="svc-t">Training & CTF</div><div class="svc-d">১-অন-১ সাইবারসিকিউরিটি ট্রেনিং।</div><div class="svc-price">৳৫,০০০/hr থেকে</div></div>
+    <div class="svc" onclick="scrollToBooking()"><div class="svc-ic">📊</div><div class="svc-t">OSINT Research</div><div class="svc-d">ডিজিটাল ইন্টেলিজেন্স।</div><div class="svc-price">৳৮,০০০ থেকে</div></div>
+  </div>
+</div>
+
+<!-- EXPERIENCE -->
+<div class="sec" style="padding-top:0;">
+  <div class="sec-hd"><div class="sec-tag">Experience</div><div class="sec-line"></div><div class="sec-num">06</div></div>
+  <div class="tl">
+    <div class="tl-item"><div class="tl-dot active"></div><div><div class="tl-yr">2024 — বর্তমান</div><div class="tl-title">Senior Security Researcher</div><div class="tl-org">Freelance / Remote · Bugcrowd Active</div><div class="tl-desc">আন্তর্জাতিক ক্লায়েন্টদের pen testing। HackerOne ও Bugcrowd bug bounty।</div></div></div>
+    <div class="tl-item"><div class="tl-dot"></div><div><div class="tl-yr">2022 — 2024</div><div class="tl-title">Cybersecurity Analyst</div><div class="tl-org">TechSecure Ltd, Dhaka</div><div class="tl-desc">৮০+ pen test। Python ও Bash অটোমেশন।</div></div></div>
+    <div class="tl-item"><div class="tl-dot"></div><div><div class="tl-yr">2020 — 2022</div><div class="tl-title">Junior Web Developer</div><div class="tl-org">Digital Agency, Dhaka</div><div class="tl-desc">React, Node.js ও Django দিয়ে full-stack অ্যাপ।</div></div></div>
+    <div class="tl-item"><div class="tl-dot"></div><div><div class="tl-yr">2019 — 2020</div><div class="tl-title">Security Intern</div><div class="tl-org">CyberShield BD</div><div class="tl-desc">Kali Linux, Metasploit ও নেটওয়ার্ক স্ক্যানিং।</div></div></div>
+  </div>
+</div>
+
+<!-- CERTS -->
+<div class="sec" style="padding-top:0;">
+  <div class="sec-hd"><div class="sec-tag">Certifications</div><div class="sec-line"></div><div class="sec-num">07</div></div>
+  <div class="certs">
+    <div class="cert"><div class="cert-ic">🏆</div><div class="cert-n">CEH v12</div><div class="cert-o">EC-Council</div><div class="cert-y">2024 · 2027</div><div class="cert-ok">✓ Verified</div></div>
+    <div class="cert"><div class="cert-ic">🔑</div><div class="cert-n">OSCP</div><div class="cert-o">Offensive Security</div><div class="cert-y">2024 · Lifetime</div><div class="cert-ok">✓ Verified</div></div>
+    <div class="cert"><div class="cert-ic">📄</div><div class="cert-n">CompTIA Security+</div><div class="cert-o">CompTIA</div><div class="cert-y">2023 · 2026</div><div class="cert-ok">✓ Verified</div></div>
+    <div class="cert"><div class="cert-ic">🚀</div><div class="cert-n">eJPT</div><div class="cert-o">eLearnSecurity</div><div class="cert-y">2023 · Lifetime</div><div class="cert-ok">✓ Verified</div></div>
+    <div class="cert"><div class="cert-ic">☁️</div><div class="cert-n">AWS Security</div><div class="cert-o">Amazon Web Services</div><div class="cert-y">2024 · 2027</div><div class="cert-ok">✓ Verified</div></div>
+    <div class="cert"><div class="cert-ic">🔍</div><div class="cert-n">PNPT</div><div class="cert-o">TCM Security</div><div class="cert-y">2024 · Lifetime</div><div class="cert-ok">✓ Verified</div></div>
+  </div>
+  <!-- Certificate file upload (Admin only) -->
+  <div id="certUploadSection" style="margin-top:14px;display:none;">
+    <div class="cert-mgr">
+      <div class="cert-mgr-title">📎 Certificate Files Upload</div>
+      <div class="cert-drop" id="certDropZone">
+        <div class="cert-drop-ic">📁</div>
+        <div class="cert-drop-txt">Certificate file drag করো বা click করো</div>
+        <div class="cert-drop-sub">PDF, JPG, PNG — max 5MB each</div>
+      </div>
+      <input type="file" id="certFileInput" style="display:none;" accept=".pdf,.jpg,.jpeg,.png" multiple/>
+      <div class="cert-grid-list" id="certGridList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- TOOLS -->
+<div class="sec" style="padding-top:0;">
+  <div class="sec-hd"><div class="sec-tag">Tools & Skills</div><div class="sec-line"></div><div class="sec-num">08</div></div>
+  <div class="tools-grid">
+    <div class="tool"><span class="tool-n">Nmap / Masscan</span><span class="tool-l">Expert</span></div>
+    <div class="tool"><span class="tool-n">Burp Suite Pro</span><span class="tool-l">Expert</span></div>
+    <div class="tool"><span class="tool-n">Metasploit</span><span class="tool-l">Expert</span></div>
+    <div class="tool"><span class="tool-n">Wireshark</span><span class="tool-l">Expert</span></div>
+    <div class="tool"><span class="tool-n">OWASP ZAP</span><span class="tool-l">Expert</span></div>
+    <div class="tool"><span class="tool-n">SQLMap</span><span class="tool-l">Advanced</span></div>
+    <div class="tool"><span class="tool-n">Shodan / Censys</span><span class="tool-l">Expert</span></div>
+    <div class="tool"><span class="tool-n">Maltego</span><span class="tool-l">Advanced</span></div>
+    <div class="tool"><span class="tool-n">Kali Linux</span><span class="tool-l">Expert</span></div>
+    <div class="tool"><span class="tool-n">Python / Bash</span><span class="tool-l">Expert</span></div>
+    <div class="tool"><span class="tool-n">React / Node.js</span><span class="tool-l">Advanced</span></div>
+    <div class="tool"><span class="tool-n">Gobuster / Nikto</span><span class="tool-l">Expert</span></div>
+  </div>
+</div>
+
+<!-- PROJECTS -->
+<div class="sec" id="work" style="padding-top:0;">
+  <div class="sec-hd"><div class="sec-tag">Recent Projects</div><div class="sec-line"></div><div class="sec-num">09</div></div>
+  <div class="projs">
+    <div class="proj"><div class="pimg a">🔍</div><div class="pbody"><div class="ptag">Pen Test</div><div class="ptitle">E-Commerce Security Audit</div><div class="pdesc">১২টি critical vulnerability পাওয়া ও ঠিক।</div></div><div class="pfoot"><span class="ptech">Burp · Nmap</span><span class="plink">View ↗</span></div></div>
+    <div class="proj"><div class="pimg b">🌐</div><div class="pbody"><div class="ptag">Web App</div><div class="ptitle">Corporate Dashboard</div><div class="pdesc">Fortune 500 কোম্পানির নিরাপদ analytics।</div></div><div class="pfoot"><span class="ptech">React · Node.js</span><span class="plink">View ↗</span></div></div>
+    <div class="proj"><div class="pimg c">🏆</div><div class="pbody"><div class="ptag">CTF</div><div class="ptitle">National CTF 2025</div><div class="pdesc">জাতীয় CTF-এ ১ম স্থান।</div></div><div class="pfoot"><span class="ptech">Multiple Tools</span><span class="plink">View ↗</span></div></div>
+    <div class="proj"><div class="pimg d">📊</div><div class="pbody"><div class="ptag">Bugcrowd</div><div class="ptitle">Bug Bounty Findings</div><div class="pdesc">Bugcrowd-এ critical bugs রিপোর্ট।</div></div><div class="pfoot"><span class="ptech">Maltego · Shodan</span><a class="plink" href="https://bugcrowd.com/h/khairulislam5b75f040-4d84-4921-bd5a-8fdfbbb59ba7" target="_blank">View ↗</a></div></div>
+  </div>
+</div>
+
+<!-- PRICING -->
+<div class="sec" style="padding-top:0;">
+  <div class="sec-hd"><div class="sec-tag">Pricing</div><div class="sec-line"></div><div class="sec-num">10</div></div>
+  <div class="pricing-grid">
+    <div class="plan"><div class="plan-name">Starter</div><div class="plan-price">৳৯,৯০০</div><div class="plan-per">// এককালীন</div><div class="plan-items"><div class="pli">Basic vulnerability scan</div><div class="pli">১ পেজ audit</div><div class="pli">PDF রিপোর্ট</div><div class="pli">৩ দিন</div></div><div class="plan-btn outline" onclick="scrollToBooking()">Book Now</div></div>
+    <div class="plan featured"><div class="plan-badge">Most Popular</div><div class="plan-name">Professional</div><div class="plan-price">৳১৫,০০০</div><div class="plan-per">// প্রতি প্রজেক্ট</div><div class="plan-items"><div class="pli">Full pen test</div><div class="pli">OWASP Top 10</div><div class="pli">বিস্তারিত রিপোর্ট</div><div class="pli">৩০ দিন সাপোর্ট</div><div class="pli">ভিডিও walkthrough</div></div><div class="plan-btn solid" onclick="scrollToBooking()">Book Now</div></div>
+    <div class="plan"><div class="plan-name">Enterprise</div><div class="plan-price">Custom</div><div class="plan-per">// মাসিক রিটেইনার</div><div class="plan-items"><div class="pli">Unlimited audits</div><div class="pli">২৪/৭ মনিটরিং</div><div class="pli">Dedicated টিম</div><div class="pli">Compliance</div></div><div class="plan-btn outline" onclick="window.open('https://t.me/Khairul_i','_blank')">Contact</div></div>
+  </div>
+</div>
+
+<!-- REVIEWS -->
+<div class="sec" style="padding-top:0;">
+  <div class="sec-hd"><div class="sec-tag">Client Reviews</div><div class="sec-line"></div><div class="sec-num">11</div></div>
+
+  <!-- Terminal style header -->
+  <div class="term-box" style="margin-bottom:14px;">
+    <div class="term-bar"><div class="td td-r"></div><div class="td td-y"></div><div class="td td-g"></div><div class="term-title-txt">// reviews.exe</div></div>
+    <div class="term-body">
+      <div class="tl"><span class="tp">sys@khairul:~$</span><span class="tc"> cat reviews.log | grep "verified"</span></div>
+      <div class="tl"><span class="to">Loading verified client reviews...</span></div>
+      <div class="tl"><span class="ts">✓ Reviews loaded. Average rating: <span id="avgRating">5.0</span>/5.0 (<span id="totalRevCount">3</span> reviews)</span></div>
+      <div class="tl"><span class="tp">sys@khairul:~$</span><span class="tcur"></span></div>
+    </div>
+  </div>
+
+  <!-- Rating overview -->
+  <div class="rev-avg" id="revAvg">
+    <div class="rev-avg-num" id="revAvgNum">5.0</div>
+    <div>
+      <div class="rev-avg-stars" id="revAvgStars">★★★★★</div>
+      <div class="rev-avg-count" id="revAvgCount">3 reviews</div>
+    </div>
+  </div>
+
+  <!-- Review tabs -->
+  <div class="rev-tabs">
+    <div class="rev-tab active" onclick="switchRevTab('all')">সব</div>
+    <div class="rev-tab" onclick="switchRevTab('verified')">✓ Verified</div>
+    <div class="rev-tab" onclick="switchRevTab('mine')" id="myRevTab" style="display:none;">আমার Review</div>
+  </div>
+
+  <!-- Static reviews -->
+  <div id="staticRevs">
+    <div class="urev"><div class="urev-hd"><div class="urev-auth"><div class="urev-av">JR</div><div><div class="urev-name">James R.</div><div class="urev-date">CTO, FinTech Startup</div></div></div></div><div class="urev-stars">★★★★★</div><div class="urev-txt">"পেমেন্ট সিস্টেমে ৩টি critical vulnerability খুঁজে বের করলেন। অত্যন্ত প্রফেশনাল।"</div></div>
+    <div class="urev"><div class="urev-hd"><div class="urev-auth"><div class="urev-av">SA</div><div><div class="urev-name">Sarah A.</div><div class="urev-date">Founder, E-Commerce BD</div></div></div></div><div class="urev-stars">★★★★★</div><div class="urev-txt">"আমাদের স্টার্টআপের জন্য সেরা বিনিয়োগ। বিস্তারিত রিপোর্ট ও সমাধান।"</div></div>
+    <div class="urev"><div class="urev-hd"><div class="urev-auth"><div class="urev-av">MK</div><div><div class="urev-name">M. Karim</div><div class="urev-date">Team Lead, Tech Agency</div></div></div></div><div class="urev-stars">★★★★★</div><div class="urev-txt">"পুরো dev team-কে secure coding শেখালেন। জ্ঞানসম্পন্ন ও ধৈর্যশীল।"</div></div>
+  </div>
+
+  <!-- User reviews -->
+  <div id="userRevsList"></div>
+
+  <!-- Write review form (logged in users) -->
+  <div id="writeRevBox" style="margin-top:16px;display:none;">
+    <div class="rev-form-box">
+      <div class="rev-form-title">✍️ তোমার Review লিখো</div>
+      <div class="star-sel" id="starSel">
+        <button class="star-btn" onclick="setStar(1)">★</button>
+        <button class="star-btn" onclick="setStar(2)">★</button>
+        <button class="star-btn" onclick="setStar(3)">★</button>
+        <button class="star-btn" onclick="setStar(4)">★</button>
+        <button class="star-btn" onclick="setStar(5)">★</button>
+      </div>
+      <div class="ff"><textarea id="revTxt" placeholder="তোমার অভিজ্ঞতা শেয়ার করো..." style="background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:10px;border-radius:4px;width:100%;outline:none;font-size:12px;resize:none;min-height:80px;font-family:DM Sans,sans-serif;"></textarea></div>
+      <button class="btn-p" onclick="submitReview()">Review জমা দাও</button>
+      <div style="margin-top:8px;font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;">// Admin approval-এর পর দেখাবে</div>
+    </div>
+  </div>
+  <div id="loginToReview" style="margin-top:14px;display:none;">
+    <div style="font-size:12px;color:var(--muted);text-align:center;padding:12px;background:var(--bg2);border-radius:4px;border:1px solid var(--border);">Review দিতে <span style="color:var(--cyan);cursor:pointer;" onclick="document.getElementById('authOverlay').style.display='flex'">Login করুন</span></div>
+  </div>
+</div>
+
+<!-- BLOG -->
+<div class="sec" style="padding-top:0;">
+  <div class="sec-hd"><div class="sec-tag">Blog</div><div class="sec-line"></div><div class="sec-num">12</div></div>
+  <div class="blogs">
+    <div class="blog"><div class="blog-img b1">📝</div><div class="blog-body"><div class="blog-cat">Ethical Hacking</div><div class="blog-title">SQL Injection কী এবং কীভাবে ঠেকাবেন?</div><div class="blog-meta">15 Apr 2026 · 8 min</div><div class="blog-read">পড়ুন ↗</div></div></div>
+    <div class="blog"><div class="blog-img b2">🔧</div><div class="blog-body"><div class="blog-cat">Tools</div><div class="blog-title">Nmap দিয়ে Network Scanning শুরু করুন</div><div class="blog-meta">02 Apr 2026 · 10 min</div><div class="blog-read">পড়ুন ↗</div></div></div>
+    <div class="blog"><div class="blog-img b3">🏆</div><div class="blog-body"><div class="blog-cat">CTF</div><div class="blog-title">CTF-এ Beginners কীভাবে শুরু করবেন</div><div class="blog-meta">20 Mar 2026 · 6 min</div><div class="blog-read">পড়ুন ↗</div></div></div>
+    <div class="blog"><div class="blog-img b4">🔒</div><div class="blog-body"><div class="blog-cat">Security</div><div class="blog-title">OWASP Top 10 — ২০২৬ আপডেট</div><div class="blog-meta">05 Mar 2026 · 12 min</div><div class="blog-read">পড়ুন ↗</div></div></div>
+  </div>
+</div>
+
+<!-- FAQ -->
+<div class="sec" style="padding-top:0;">
+  <div class="sec-hd"><div class="sec-tag">FAQ</div><div class="sec-line"></div><div class="sec-num">13</div></div>
+  <div class="faq">
+    <div class="faq-item"><div class="faq-q" onclick="tFaq(0)"><span>Ethical hacking কি আইনসম্মত?</span><span class="faq-ico" id="fi0">+</span></div><div class="faq-a" id="fa0">হ্যাঁ। মালিকের লিখিত অনুমতি নিয়ে করা হয়।</div></div>
+    <div class="faq-item"><div class="faq-q" onclick="tFaq(1)"><span>কাজ শুরু হতে কতক্ষণ লাগে?</span><span class="faq-ico" id="fi1">+</span></div><div class="faq-a" id="fa1">সাধারণত ২৪-৪৮ ঘণ্টার মধ্যে।</div></div>
+    <div class="faq-item"><div class="faq-q" onclick="tFaq(2)"><span>রিপোর্ট কি বাংলায় পাওয়া যায়?</span><span class="faq-ico" id="fi2">+</span></div><div class="faq-a" id="fa2">হ্যাঁ, বাংলা ও ইংরেজি উভয় ভাষায়।</div></div>
+    <div class="faq-item"><div class="faq-q" onclick="tFaq(3)"><span>Payment কীভাবে করতে হয়?</span><span class="faq-ico" id="fi3">+</span></div><div class="faq-a" id="fa3">bKash, Nagad, PayPal ও Bank Transfer। বড় প্রজেক্টে ৫০% অগ্রিম।</div></div>
+    <div class="faq-item"><div class="faq-q" onclick="tFaq(4)"><span>Booking করার পর কী হবে?</span><span class="faq-ico" id="fi4">+</span></div><div class="faq-a" id="fa4">Booking submit করার পর Khairul Islam ২৪ঘণ্টার মধ্যে confirm করবেন। তুমি Dashboard-এ status দেখতে পাবে।</div></div>
+  </div>
+</div>
+
+<!-- CONTACT -->
+<div class="contact-box" id="contact">
+  <div class="contact-inner">
+    <div>
+      <div class="ct-title">কাজ করবে আমার সাথে?</div>
+      <div class="ct-sub">আজই যোগাযোগ করো।</div>
+      <div class="ct-items">
+        <a class="ct-item" href="mailto:khairul.cyber@proton.me"><div class="ct-ic">✉️</div><div><div class="ct-lbl">Email</div><div class="ct-val">khairul.cyber@proton.me</div></div></a>
+        <a class="ct-item" href="https://t.me/Khairul_i" target="_blank"><div class="ct-ic">✈️</div><div><div class="ct-lbl">Telegram</div><div class="ct-val">t.me/Khairul_i</div></div></a>
+        <a class="ct-item" href="https://github.com/bejoykhan80" target="_blank"><div class="ct-ic">🐙</div><div><div class="ct-lbl">GitHub</div><div class="ct-val">github.com/bejoykhan80</div></div></a>
+        <a class="ct-item" href="https://bugcrowd.com/h/khairulislam5b75f040-4d84-4921-bd5a-8fdfbbb59ba7" target="_blank"><div class="ct-ic">🎯</div><div><div class="ct-lbl">Bugcrowd</div><div class="ct-val">bugcrowd.com/khairul</div></div></a>
+      </div>
+    </div>
+    <div class="ct-form">
+      <input class="ci" placeholder="তোমার নাম" type="text" id="ctName"/>
+      <input class="ci" placeholder="ইমেইল অ্যাড্রেস" type="email" id="ctEmail"/>
+      <input class="ci" placeholder="বাজেট (BDT)" type="text" id="ctBudget"/>
+      <input class="ci" placeholder="প্রজেক্টের বিষয়" type="text" id="ctSubject"/>
+      <textarea class="ci" placeholder="বিস্তারিত লিখুন..." rows="3" style="resize:none;" id="ctMsg"></textarea>
+      <button class="csend" onclick="submitContact()">বার্তা পাঠাও →</button>
+    </div>
+  </div>
+</div>
+
+<!-- SOCIALS -->
+<div class="sec-hd" style="padding:0 24px 12px;"><div class="sec-tag">Connect</div><div class="sec-line"></div></div>
+<div class="socials-strip">
+  <a class="soc-btn" href="https://t.me/Khairul_i" target="_blank"><div class="soc-ic">✈️</div><div><div class="soc-label">Telegram</div><div class="soc-handle">@Khairul_i</div></div></a>
+  <a class="soc-btn" href="mailto:khairul.cyber@proton.me"><div class="soc-ic">✉️</div><div><div class="soc-label">ProtonMail</div><div class="soc-handle">khairul.cyber@proton.me</div></div></a>
+  <a class="soc-btn" href="https://github.com/bejoykhan80" target="_blank"><div class="soc-ic">🐙</div><div><div class="soc-label">GitHub</div><div class="soc-handle">@bejoykhan80</div></div></a>
+  <a class="soc-btn" href="https://bugcrowd.com/h/khairulislam5b75f040-4d84-4921-bd5a-8fdfbbb59ba7" target="_blank"><div class="soc-ic">🎯</div><div><div class="soc-label">Bugcrowd</div><div class="soc-handle">Active Hunter</div></div></a>
+  <a class="soc-btn" href="#"><div class="soc-ic">💼</div><div><div class="soc-label">LinkedIn</div><div class="soc-handle">Khairul Islam</div></div></a>
+</div>
+<div class="footer">
+  <div><div class="fl-logo">KHAIRUL ISLAM</div><div class="fl-tagline">// Ethical Hacker · Web Developer · Security Researcher · Bangladesh</div></div>
+  <div class="fr">
+    <div class="fsocs">
+      <a class="fsoc" href="https://t.me/Khairul_i" target="_blank">Telegram</a>
+      <a class="fsoc" href="mailto:khairul.cyber@proton.me">Email</a>
+      <a class="fsoc" href="https://github.com/bejoykhan80" target="_blank">GitHub</a>
+      <a class="fsoc" href="https://bugcrowd.com/h/khairulislam5b75f040-4d84-4921-bd5a-8fdfbbb59ba7" target="_blank">Bugcrowd</a>
+    </div>
+    <div class="fcopy">// © 2026 Khairul Islam. All rights reserved.</div>
+  </div>
+</div>
+<!-- TOAST NOTIFICATIONS -->
+<div class="toast-wrap" id="toastWrap"></div>
+
+</div><!-- end mainSite -->
+
+<!-- ======= AI CHATBOT ======= -->
+<div class="chat-fab" id="chatFab" style="display:none;">
+  <div class="chat-btn" onclick="toggleChat()">💬</div>
+  <div class="chat-notif" id="chatNotif">1</div>
+</div>
+<div class="chat-win" id="chatWin">
+  <div class="chat-win-head">
+    <div class="cwh-left">
+      <div class="cwh-av">KI<div class="cwh-online"></div></div>
+      <div><div class="cwh-name">Khairul Islam</div><div class="cwh-status">● AI Assistant</div></div>
+    </div>
+    <div class="cwh-right">
+      <div class="cwh-btn" onclick="clearChat()" title="Clear">🗑</div>
+      <div class="cwh-btn" onclick="toggleChat()">✕</div>
+    </div>
+  </div>
+  <div class="chat-banner"><strong>AI-powered</strong> — বাংলা বা English-এ প্রশ্ন করুন।</div>
+  <div class="chat-msgs-wrap" id="chatMsgs"></div>
+  <div class="chat-qbtns">
+    <div class="qbtn" onclick="qm('সার্ভিস কী কী?')">🔧 Services</div>
+    <div class="qbtn" onclick="qm('Booking করতে চাই')">📅 Book</div>
+    <div class="qbtn" onclick="qm('Pricing কত?')">💰 Pricing</div>
+    <div class="qbtn" onclick="qm('যোগাযোগ করব কীভাবে?')">📞 Contact</div>
+  </div>
+  <div class="chat-foot-wrap">
+    <div class="chat-in-box">
+      <input class="chat-in" id="chatIn" placeholder="বার্তা লিখুন..." onkeydown="if(event.key==='Enter')sendChat()"/>
+    </div>
+    <button class="chat-snd" id="chatSndBtn" onclick="sendChat()">➤</button>
+  </div>
+  <div class="chat-powered">Powered by <em>Claude AI</em><span style="color:var(--green);">● Ready</span></div>
+</div>
+
+<script>
+// ====== DATA STORE ======
+var ADMIN_EMAIL='khairul.cyber@proton.me';
+var ADMIN_PASS_KEY='ki_admin_pass';
+// Password stored as simple hash (not plain text)
+function hashPass(p){var h=0;for(var i=0;i<p.length;i++){h=((h<<5)-h)+p.charCodeAt(i);h|=0;}return h.toString(36);}
+var getAdminPass=function(){return localStorage.getItem(ADMIN_PASS_KEY)||hashPass('ki@2026#secure');};
+var checkAdminPass=function(p){return hashPass(p)===getAdminPass();};
+var users=JSON.parse(localStorage.getItem('ki_users')||'[]');
+var videos=JSON.parse(localStorage.getItem('ki_videos')||'[]');
+var bookings=JSON.parse(localStorage.getItem('ki_bookings')||'[]');
+var privateChats=JSON.parse(localStorage.getItem('ki_chats')||'{}');
+var settings=JSON.parse(localStorage.getItem('ki_settings')||'{"status":"available","title":"","announcement":""}');
+var currentUser=null;
+var chatHistory=[];
+var chatOpen=false;
+var selectedService='';
+var selectedSlot='';
+var activeAdminChatUser=null;
+
+function saveData(key,val){localStorage.setItem(key,JSON.stringify(val));}
+
+// ====== AUTH ======
+function switchTab(t){
+  document.getElementById('lTab').className='auth-tab'+(t==='l'?' active':'');
+  document.getElementById('sTab').className='auth-tab'+(t==='s'?' active':'');
+  document.getElementById('lForm').style.display=t==='l'?'block':'none';
+  document.getElementById('sForm').style.display=t==='s'?'block':'none';
+  document.getElementById('authErr').textContent='';
+}
+function doLogin(){
+  var e=document.getElementById('lEmail').value.trim();
+  var p=document.getElementById('lPass').value;
+  if(!e||!p){document.getElementById('authErr').textContent='Email ও Password দিন।';return;}
+  if(e===ADMIN_EMAIL&&checkAdminPass(p)){currentUser={email:e,role:'admin',name:'Khairul Islam'};loginSuccess();return;}
+  var u=users.find(function(x){return x.email===e&&x.pass===p;});
+  if(u){currentUser={email:e,role:'user',name:u.name||e.split('@')[0]};loginSuccess();}
+  else document.getElementById('authErr').textContent='Email বা Password ভুল।';
+}
+function doSignup(){
+  var name=document.getElementById('sName').value.trim();
+  var e=document.getElementById('sEmail').value.trim();
+  var p=document.getElementById('sPass').value;
+  if(!name||!e||!p){document.getElementById('authErr').textContent='সব ফিল্ড পূরণ করুন।';return;}
+  if(p.length<6){document.getElementById('authErr').textContent='Password কমপক্ষে ৬ অক্ষর।';return;}
+  if(e===ADMIN_EMAIL){document.getElementById('authErr').textContent='এই email ব্যবহার করা যাবে না।';return;}
+  if(users.find(function(x){return x.email===e;})){document.getElementById('authErr').textContent='Email ইতিমধ্যে registered।';return;}
+  users.push({name:name,email:e,pass:p,phone:'',joinDate:new Date().toLocaleDateString('bn-BD')});
+  saveData('ki_users',users);
+  currentUser={email:e,role:'user',name:name};
+  loginSuccess();
+}
+function loginSuccess(){
+  document.getElementById('authOverlay').style.display='none';
+  document.getElementById('mainSite').style.display='block';
+  document.getElementById('chatFab').style.display='flex';
+  var tb=document.getElementById('topBar');
+  tb.style.display='flex';
+  document.getElementById('tbEmail').textContent=currentUser.email;
+  document.getElementById('mainNav').style.marginTop='38px';
+  if(currentUser.role==='admin'){
+    document.getElementById('adminBtn').style.display='inline-block';
+    setTimeout(function(){var cs=document.getElementById('certUploadSection');if(cs)cs.style.display='block';},800);
+  } else if(currentUser.role==='user'){
+    document.getElementById('dashBtn').style.display='inline-block';
+  }
+  initSite();
+}
+function skipAuth(){
+  currentUser={email:'guest',role:'guest',name:'Guest'};
+  document.getElementById('authOverlay').style.display='none';
+  document.getElementById('mainSite').style.display='block';
+  document.getElementById('chatFab').style.display='flex';
+  document.getElementById('mainNav').style.marginTop='0';
+  initSite();
+}
+function doLogout(){
+  currentUser=null;chatHistory=[];
+  ['mainSite','topBar','chatFab','adminOverlay','dashOverlay'].forEach(function(id){
+    var el=document.getElementById(id);if(el)el.style.display='none';
+  });
+  document.getElementById('chatWin').style.display='none';
+  document.getElementById('chatMsgs').innerHTML='';
+  document.getElementById('authOverlay').style.display='flex';
+  document.getElementById('mainNav').style.marginTop='0';
+  document.getElementById('adminBtn').style.display='none';
+  document.getElementById('dashBtn').style.display='none';
+  document.getElementById('authErr').textContent='';
+  chatOpen=false;
+}
+
+// ====== ADMIN ======
+function openAdmin(){renderAdminContent();document.getElementById('adminOverlay').style.display='flex';}
+function closeAdmin(){document.getElementById('adminOverlay').style.display='none';}
+function switchAdminTab(t){
+  document.querySelectorAll('.admin-tab').forEach(function(el){el.className='admin-tab';});
+  document.querySelectorAll('.admin-panel').forEach(function(el){el.className='admin-panel';});
+  var tabs=['stats','users','bookings','videos','reviews','chats','settings'];
+  var idx=tabs.indexOf(t);
+  if(idx>=0)document.querySelectorAll('.admin-tab')[idx].className='admin-tab active';
+  document.getElementById('ap-'+t).className='admin-panel active';
+  renderAdminContent();
+  if(t==='reviews')renderAdminReviews();
+}
+function renderAdminReviews(){
+  reviews=JSON.parse(localStorage.getItem('ki_reviews')||'[]');
+  var el=document.getElementById('adminReviewList');if(!el)return;
+  if(!reviews.length){el.innerHTML='<div style="font-size:12px;color:var(--muted);padding:10px;">কোনো review নেই।</div>';return;}
+  el.innerHTML=reviews.map(function(r,i){
+    return '<div class="bkrow"><div class="bkinfo"><div class="bk-user-txt">'+r.name+' ('+r.email+')</div><div class="bk-det">'+'★'.repeat(r.stars)+' — "'+r.text.substring(0,60)+'"</div></div><div class="bk-action-btns">'+(!r.approved?'<button class="confirm-btn" onclick="approveReview('+i+')">✓ Approve</button>':'<span style="color:var(--green);font-size:11px;">✓ Approved</span>')+'<button class="reject-btn" onclick="deleteReview('+i+')">Del</button></div></div>';
+  }).join('');
+}
+function renderAdminContent(){
+  users=JSON.parse(localStorage.getItem('ki_users')||'[]');
+  bookings=JSON.parse(localStorage.getItem('ki_bookings')||'[]');
+  videos=JSON.parse(localStorage.getItem('ki_videos')||'[]');
+  privateChats=JSON.parse(localStorage.getItem('ki_chats')||'{}');
+  var pend=bookings.filter(function(b){return b.status==='pending';}).length;
+  document.getElementById('as-users').textContent=users.length;
+  document.getElementById('as-bookings').textContent=bookings.length;
+  document.getElementById('as-pending').textContent=pend;
+  document.getElementById('as-videos').textContent=videos.length;
+  document.getElementById('as-chats').textContent=Object.keys(privateChats).length;
+  // Show email masked
+  var em=ADMIN_EMAIL;var masked=em[0]+'●●●●@'+em.split('@')[1];
+  var sel=document.getElementById('showAdminEmail');if(sel)sel.textContent=masked;
+  // Users
+  var ul=document.getElementById('adminUserList');
+  ul.innerHTML='<div class="user-row"><span class="user-email-txt">'+ADMIN_EMAIL+'</span><span class="role-badge admin">Admin</span></div>';
+  users.forEach(function(u,i){ul.innerHTML+='<div class="user-row"><div><div class="user-email-txt">'+u.email+'</div><div style="font-size:10px;color:var(--muted);">'+u.name+'</div></div><div style="display:flex;gap:6px;align-items:center;"><span class="role-badge user">User</span><button class="del-btn" onclick="delUser('+i+')">Del</button></div></div>';});
+  // Bookings
+  var bl=document.getElementById('adminBookingList');
+  if(!bookings.length){bl.innerHTML='<div style="font-size:12px;color:var(--muted);padding:10px;">কোনো booking নেই।</div>';} else {
+    bl.innerHTML=bookings.map(function(b,i){return '<div class="booking-admin-row"><div class="bk-info"><div class="bk-user">'+b.email+'</div><div class="bk-detail">'+b.service+' · '+b.date+' '+b.slot+'</div></div><div class="bk-action-btns"><span class="bk-status '+b.status+'">'+b.status+'</span>'+
+    (b.status==='pending'?'<button class="confirm-btn" onclick="updateBooking('+i+',\'confirmed\')">✓</button><button class="reject-btn" onclick="updateBooking('+i+',\'cancelled\')">✗</button>':'')+'</div></div>';}).join('');
+  }
+  // Videos admin
+  var vl=document.getElementById('adminVideoList');
+  vl.innerHTML=videos.map(function(v,i){return '<div class="vla-item"><div><div class="vla-title">'+v.title+'</div><div class="vla-url">'+v.access+' · '+v.url.substring(0,35)+'</div></div><button class="del-btn" onclick="delVideo('+i+')">Del</button></div>';}).join('')||'<div style="font-size:11px;color:var(--muted);padding:8px;">কোনো ভিডিও নেই।</div>';
+  // Chats
+  var cl=document.getElementById('adminChatList');
+  var chatUsers=Object.keys(privateChats);
+  if(!chatUsers.length){cl.innerHTML='<div style="font-size:12px;color:var(--muted);">কোনো message নেই।</div>';}
+  else{cl.innerHTML=chatUsers.map(function(email){var msgs=privateChats[email]||[];var last=msgs[msgs.length-1];return '<div class="admin-chat-item"'+(activeAdminChatUser===email?' style="border-color:var(--cyan);"':'')+' onclick="selectAdminChat(\''+email+'\')"><div class="aci-email">'+email+'</div><div class="aci-preview">'+(last?last.text.substring(0,40)+'...':'No messages')+'</div></div>';}).join('');}
+}
+function selectAdminChat(email){
+  activeAdminChatUser=email;
+  document.getElementById('adminChatReply').style.display='block';
+  document.getElementById('replyingTo').textContent='Replying to: '+email;
+  renderAdminContent();
+}
+function sendAdminReply(){
+  if(!activeAdminChatUser)return;
+  var txt=document.getElementById('adminReplyInput').value.trim();
+  if(!txt)return;
+  if(!privateChats[activeAdminChatUser])privateChats[activeAdminChatUser]=[];
+  privateChats[activeAdminChatUser].push({from:'admin',text:txt,time:getTime()});
+  saveData('ki_chats',privateChats);
+  document.getElementById('adminReplyInput').value='';
+  renderAdminContent();
+}
+function delUser(i){users.splice(i,1);saveData('ki_users',users);renderAdminContent();}
+function updateBooking(i,status){bookings[i].status=status;saveData('ki_bookings',bookings);renderAdminContent();}
+function addVideo(){
+  var t=document.getElementById('vTitle').value.trim();
+  var u=document.getElementById('vUrl').value.trim();
+  var d=document.getElementById('vDesc').value.trim();
+  var a=document.getElementById('vAccess').value;
+  if(!t||!u){alert('Title ও URL দিন।');return;}
+  var embed=u;
+  if(u.includes('watch?v='))embed='https://www.youtube.com/embed/'+u.split('v=')[1].split('&')[0];
+  else if(u.includes('youtu.be/'))embed='https://www.youtube.com/embed/'+u.split('youtu.be/')[1].split('?')[0];
+  videos.push({title:t,url:embed,desc:d,access:a});
+  saveData('ki_videos',videos);
+  document.getElementById('vTitle').value='';document.getElementById('vUrl').value='';document.getElementById('vDesc').value='';
+  renderAdminContent();renderVideoGrid();
+}
+function delVideo(i){videos.splice(i,1);saveData('ki_videos',videos);renderAdminContent();renderVideoGrid();}
+function changeAdminPass(){
+  var np=document.getElementById('newAdminPass').value;
+  if(!np||np.length<8){alert('কমপক্ষে ৮ অক্ষর দিন।');return;}
+  localStorage.setItem(ADMIN_PASS_KEY,hashPass(np));
+  document.getElementById('newAdminPass').value='';
+  alert('✅ Password updated!');
+}
+function saveSettings(){
+  settings.status=document.getElementById('setStatus').value;
+  settings.title=document.getElementById('setTitle').value||settings.title;
+  saveData('ki_settings',settings);applySettings();alert('Saved!');
+}
+function saveAnnouncement(){
+  settings.announcement=document.getElementById('announcement').value;
+  saveData('ki_settings',settings);applyAnnouncement();alert('Announcement posted!');
+}
+
+// ====== DASHBOARD ======
+function openDashboard(){
+  renderDashboard();
+  document.getElementById('dashOverlay').style.display='flex';
+}
+function closeDashboard(){document.getElementById('dashOverlay').style.display='none';}
+function switchDbTab(t){
+  document.querySelectorAll('.db-tab').forEach(function(el){el.className='db-tab';});
+  document.querySelectorAll('.db-panel').forEach(function(el){el.className='db-panel';});
+  var tabs=['profile','bookings','messages','notifications'];
+  var idx=tabs.indexOf(t);
+  if(idx>=0)document.querySelectorAll('.db-tab')[idx].className='db-tab active';
+  document.getElementById('dp-'+t).className='db-panel active';
+  if(t==='messages')renderPrivateChat();
+  if(t==='bookings')renderMyBookings();
+  if(t==='notifications')renderNotifications();
+}
+function renderDashboard(){
+  if(!currentUser||currentUser.role==='guest')return;
+  var av=currentUser.name?currentUser.name[0].toUpperCase():'U';
+  document.getElementById('profileAv').textContent=av;
+  document.getElementById('profileName').textContent=currentUser.name||'User';
+  document.getElementById('profileEmail').textContent=currentUser.email;
+  document.getElementById('profileRole').textContent=currentUser.role==='admin'?'Admin':'Member';
+  document.getElementById('profileRole').className='profile-role-badge '+(currentUser.role==='admin'?'role-admin':'role-user');
+  var myBk=bookings.filter(function(b){return b.email===currentUser.email;});
+  var myMsgs=(privateChats[currentUser.email]||[]).length;
+  document.getElementById('ps-bookings').textContent=myBk.length;
+  document.getElementById('ps-messages').textContent=myMsgs;
+  var u=users.find(function(x){return x.email===currentUser.email;});
+  if(u){document.getElementById('editName').value=u.name||'';document.getElementById('editPhone').value=u.phone||'';}
+  renderMyBookings();renderPrivateChat();renderNotifications();
+}
+function saveProfile(){
+  var name=document.getElementById('editName').value.trim();
+  var phone=document.getElementById('editPhone').value.trim();
+  var pass=document.getElementById('editPass').value;
+  var idx=users.findIndex(function(x){return x.email===currentUser.email;});
+  if(idx>=0){
+    if(name)users[idx].name=name;
+    if(phone)users[idx].phone=phone;
+    if(pass&&pass.length>=6)users[idx].pass=pass;
+    saveData('ki_users',users);
+    if(name)currentUser.name=name;
+    document.getElementById('profileName').textContent=name||currentUser.name;
+    alert('Profile updated!');
+  }
+}
+function renderMyBookings(){
+  var myBk=bookings.filter(function(b){return b.email===currentUser.email;});
+  var el=document.getElementById('myBookingsList');
+  if(!myBk.length){el.innerHTML='<div style="font-size:12px;color:var(--muted);padding:12px;">কোনো booking নেই। <a href="#booking" onclick="closeDashboard()" style="color:var(--cyan);">Book করুন →</a></div>';return;}
+  el.innerHTML=myBk.map(function(b){return '<div class="booking-row"><div><div class="bk-service">'+b.service+'</div><div class="bk-date">'+b.date+' · '+b.slot+'</div></div><span class="bk-status '+b.status+'">'+b.status+'</span></div>';}).join('');
+}
+function renderPrivateChat(){
+  if(!currentUser||currentUser.role==='guest')return;
+  var msgs=privateChats[currentUser.email]||[];
+  var el=document.getElementById('privateChatMsgs');
+  if(!msgs.length){el.innerHTML='<div style="font-size:12px;color:var(--muted);padding:12px;text-align:center;">Khairul Islam-এর সাথে chat শুরু করুন।</div>';return;}
+  el.innerHTML=msgs.map(function(m){return '<div class="pchat-msg '+(m.from==='admin'?'admin':'user')+'"><div class="pchat-bubble">'+m.text+'</div><div class="pchat-time">'+m.time+'</div></div>';}).join('');
+  el.scrollTop=el.scrollHeight;
+}
+function sendPrivateMsg(){
+  if(!currentUser||currentUser.role==='guest')return;
+  var inp=document.getElementById('privateChatInput');
+  var txt=inp.value.trim();if(!txt)return;
+  if(!privateChats[currentUser.email])privateChats[currentUser.email]=[];
+  privateChats[currentUser.email].push({from:'user',text:txt,time:getTime()});
+  saveData('ki_chats',privateChats);
+  inp.value='';renderPrivateChat();
+  document.getElementById('ps-messages').textContent=privateChats[currentUser.email].length;
+}
+function renderNotifications(){
+  var el=document.getElementById('notificationList');
+  var notes=[];
+  var myBk=bookings.filter(function(b){return b.email===currentUser.email;});
+  if(myBk.length){myBk.forEach(function(b){notes.push({ic:'📅',txt:'Booking: <strong>'+b.service+'</strong> — Status: <span style="color:'+(b.status==='confirmed'?'var(--green)':b.status==='cancelled'?'var(--red)':'var(--gold)')+'">'+b.status+'</span>',time:b.date});});}
+  var msgs=privateChats[currentUser.email]||[];
+  var adminMsgs=msgs.filter(function(m){return m.from==='admin';});
+  if(adminMsgs.length){notes.push({ic:'💬',txt:'Khairul Islam-এর <strong>'+adminMsgs.length+'টি</strong> reply আছে।',time:'Recently'});}
+  var s=settings.announcement;
+  if(s){notes.push({ic:'📢',txt:'<strong>Announcement:</strong> '+s,time:'Admin'});}
+  if(!notes.length){el.innerHTML='<div style="font-size:12px;color:var(--muted);padding:14px;">কোনো notification নেই।</div>';return;}
+  el.innerHTML=notes.map(function(n){return '<div class="notification"><div class="notif-ic">'+n.ic+'</div><div><div class="notif-txt">'+n.txt+'</div><div class="notif-time">'+n.time+'</div></div></div>';}).join('');
+}
+
+// ====== BOOKING ======
+function renderBookingSection(){
+  var el=document.getElementById('bookingContent');
+  var isLoggedIn=currentUser&&currentUser.role!=='guest';
+  if(!isLoggedIn){
+    el.innerHTML='<div class="exclusive-lock"><div class="lock-ic">🔐</div><div class="lock-title">Login করুন Booking-এর জন্য</div><div class="lock-desc">Appointment book করতে অ্যাকাউন্ট তৈরি করুন বা login করুন।</div><button class="btn-primary" style="max-width:200px;margin:0 auto;" onclick="document.getElementById(\'authOverlay\').style.display=\'flex\';">Login / Sign Up</button></div>';
+    return;
+  }
+  el.innerHTML='<div class="booking-grid">'+
+  '<div class="booking-info"><div class="bi-title">Service বেছে নিন</div><div class="service-options" id="serviceOptions">'+
+  ['Penetration Testing — ৳১৫,০০০+','Web Development — ৳২০,০০০+','Security Audit — ৳১০,০০০+','Bug Bounty — Custom','Training & CTF — ৳৫,০০০/hr+','OSINT Research — ৳৮,০০০+'].map(function(s,i){var name=s.split(' — ')[0];var price=s.split(' — ')[1];return '<div class="srv-opt" id="sopt'+i+'" onclick="selectSvc(\''+name+'\','+i+')"><span class="srv-opt-name">'+name+'</span><span class="srv-opt-price">'+price+'</span></div>';}).join('')+'</div></div>'+
+  '<div class="booking-form"><div class="book-title">Date & Time বেছে নিন</div>'+
+  '<div class="form-field"><label>Date</label><input type="date" id="bookDate" min="'+new Date().toISOString().split('T')[0]+'" style="background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:10px;border-radius:4px;width:100%;outline:none;font-size:12px;"/></div>'+
+  '<div class="timeslots" id="timeSlots">'+
+  ['10:00 AM','11:00 AM','12:00 PM','2:00 PM','3:00 PM','4:00 PM','5:00 PM','6:00 PM'].map(function(s){return '<div class="slot" onclick="selectSlot(this,\''+s+'\')">'+s+'</div>';}).join('')+
+  '</div>'+
+  '<div class="form-field"><label>Message (Optional)</label><textarea id="bookMsg" placeholder="প্রজেক্ট সম্পর্কে সংক্ষেপে লিখুন..." style="background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:10px;border-radius:4px;width:100%;outline:none;font-size:12px;resize:none;min-height:70px;font-family:DM Sans,sans-serif;"></textarea></div>'+
+  '<button class="btn-gold" onclick="submitBooking()">📅 Booking Confirm করুন</button>'+
+  '</div></div>'+
+  '<div class="my-bookings" id="bookingListDisplay"><div class="mb-title">// আমার সাম্প্রতিক Bookings</div><div id="recentBookings"></div></div>';
+  renderRecentBookings();
+}
+function selectSvc(name,idx){
+  selectedService=name;
+  document.querySelectorAll('.srv-opt').forEach(function(el){el.className='srv-opt';});
+  document.getElementById('sopt'+idx).className='srv-opt selected';
+}
+function selectSlot(el,slot){
+  selectedSlot=slot;
+  document.querySelectorAll('.slot').forEach(function(s){s.className='slot';});
+  el.className='slot sel';
+}
+function submitBooking(){
+  if(!selectedService){showToast('wrn','⚠️','Service বেছে নিন।');return;}
+  var date=document.getElementById('bookDate').value;
+  if(!date){showToast('wrn','⚠️','Date দিন।');return;}
+  if(!selectedSlot){showToast('wrn','⚠️','Time slot বেছে নিন।');return;}
+  var msg=document.getElementById('bookMsg').value;
+  var bk={email:currentUser.email,name:currentUser.name,service:selectedService,date:date,slot:selectedSlot,msg:msg,status:'pending',payment:'unpaid',id:Date.now()};
+  bookings.push(bk);
+  saveData('ki_bookings',bookings);
+  // Show payment box
+  var pb=document.getElementById('paymentBox');
+  if(pb){pb.style.display='block';pb.scrollIntoView({behavior:'smooth'});}
+  showToast('ok','✅','Booking জমা হয়েছে! Payment করুন।');
+  // Telegram notification
+  sendTelegramNotify('📅 নতুন Booking!\nService: '+selectedService+'\nDate: '+date+' '+selectedSlot+'\nClient: '+currentUser.email);
+  renderRecentBookings();
+}
+
+var selPayMethod='';
+function selPay(method){
+  selPayMethod=method;
+  document.querySelectorAll('.pay-opt').forEach(function(el){el.className='pay-opt';});
+  document.getElementById('po-'+method).className='pay-opt sel';
+  var inst=document.getElementById('payInst');
+  var txt=document.getElementById('payStepTxt');
+  inst.className='pay-inst show';
+  if(method==='bkash'){
+    txt.innerHTML='<strong>bKash এ পাঠানোর ধাপ:</strong><br>① bKash App খোলো → Send Money<br>② Number: <strong>01XXXXXXXXX</strong> (Merchant)<br>③ Amount দাও → Reference: তোমার email<br>④ Transaction ID নিচে বসাও';
+  } else {
+    txt.innerHTML='<strong>Nagad এ পাঠানোর ধাপ:</strong><br>① Nagad App খোলো → Send Money<br>② Number: <strong>01XXXXXXXXX</strong><br>③ Amount দাও → Reference: তোমার email<br>④ Transaction ID নিচে বসাও';
+  }
+}
+function submitPayment(){
+  if(!selPayMethod){showToast('wrn','⚠️','Payment method বেছে নিন।');return;}
+  var trx=document.getElementById('trxId').value.trim();
+  var amt=document.getElementById('trxAmt').value.trim();
+  if(!trx){showToast('wrn','⚠️','Transaction ID দিন।');return;}
+  if(!amt){showToast('wrn','⚠️','Amount দিন।');return;}
+  // Save payment info
+  var lastBk=bookings[bookings.length-1];
+  if(lastBk){lastBk.payment='paid';lastBk.trxId=trx;lastBk.trxAmt=amt;lastBk.payMethod=selPayMethod;saveData('ki_bookings',bookings);}
+  showToast('ok','✅','Payment জমা হয়েছে! Admin verify করবেন।');
+  sendTelegramNotify('💳 Payment জমা!\nMethod: '+selPayMethod.toUpperCase()+'\nTrx ID: '+trx+'\nAmount: '+amt+'\nClient: '+currentUser.email);
+  document.getElementById('paymentBox').style.display='none';
+  renderRecentBookings();
+}
+function renderRecentBookings(){
+  var el=document.getElementById('recentBookings');
+  if(!el)return;
+  var myBk=bookings.filter(function(b){return b.email===currentUser.email;}).slice(-3).reverse();
+  if(!myBk.length){el.innerHTML='<div style="font-size:12px;color:var(--muted);padding:8px;">কোনো booking নেই।</div>';return;}
+  el.innerHTML=myBk.map(function(b){return '<div class="booking-row"><div><div class="bk-service">'+b.service+'</div><div class="bk-date">'+b.date+' · '+b.slot+'</div></div><span class="bk-status '+b.status+'">'+b.status+'</span></div>';}).join('');
+}
+function scrollToBooking(){document.getElementById('booking').scrollIntoView({behavior:'smooth'});}
+
+// ====== EXCLUSIVE CONTENT ======
+function renderExclusive(){
+  var el=document.getElementById('exclusiveContent');
+  var isLoggedIn=currentUser&&currentUser.role!=='guest';
+  if(!isLoggedIn){
+    el.innerHTML='<div class="exclusive-lock"><div class="lock-ic">🔐</div><div class="lock-title">Members-Only Content</div><div class="lock-desc">Login করলে exclusive cybersecurity resources, tools guide, এবং Khairul Islam-এর private notes দেখতে পাবেন।</div><button class="btn-primary" style="max-width:220px;margin:0 auto;" onclick="document.getElementById(\'authOverlay\').style.display=\'flex\';">Login করুন</button></div>';
+    return;
+  }
+  el.innerHTML='<div class="exclusive-grid">'+
+  '<div class="exc-card"><div class="exc-icon">📚</div><div class="exc-title">Security Cheatsheet</div><div class="exc-desc">Nmap, Burp Suite, Metasploit-এর advanced commands ও tips।</div><span class="exc-badge free">Free Member</span></div>'+
+  '<div class="exc-card"><div class="exc-icon">🎯</div><div class="exc-title">CTF Writeups</div><div class="exc-desc">Past CTF challenges-এর বিস্তারিত writeup ও solution।</div><span class="exc-badge free">Free Member</span></div>'+
+  '<div class="exc-card"><div class="exc-icon">🔧</div><div class="exc-title">Custom Tools</div><div class="exc-desc">Khairul Islam-এর নিজের তৈরি Python security scripts।</div><span class="exc-badge premium">Premium</span></div>'+
+  '<div class="exc-card"><div class="exc-icon">🎓</div><div class="exc-title">Course Materials</div><div class="exc-desc">CEH ও OSCP preparation materials, notes, PDFs।</div><span class="exc-badge premium">Premium</span></div>'+
+  '<div class="exc-card"><div class="exc-icon">💬</div><div class="exc-title">Private Chat</div><div class="exc-desc">Directly Khairul Islam-এর সাথে chat করুন।</div><span class="exc-badge free">Free Member</span></div>'+
+  '<div class="exc-card"><div class="exc-icon">📅</div><div class="exc-title">Priority Booking</div><div class="exc-desc">Members-দের booking দ্রুত confirm করা হয়।</div><span class="exc-badge free">Free Member</span></div>'+
+  '</div>';
+}
+
+// ====== VIDEO GRID ======
+function renderVideoGrid(){
+  videos=JSON.parse(localStorage.getItem('ki_videos')||'[]');
+  var el=document.getElementById('videoGrid');
+  var isLoggedIn=currentUser&&currentUser.role!=='guest';
+  var visible=videos.filter(function(v){return v.access==='public'||(isLoggedIn&&v.access==='members');});
+  if(!visible.length){el.innerHTML='<div class="no-vids">🎬 এখনো কোনো ভিডিও নেই।</div>';return;}
+  el.innerHTML=visible.map(function(v){return '<div class="vid-card"><div class="vid-thumb"><iframe src="'+v.url+'" allowfullscreen loading="lazy"></iframe></div><div class="vid-body"><div class="vid-title">'+v.title+'</div><div class="vid-desc">'+v.desc+'</div></div></div>';}).join('');
+}
+
+// ====== SETTINGS ======
+function applySettings(){
+  settings=JSON.parse(localStorage.getItem('ki_settings')||'{"status":"available","title":"","announcement":""}');
+  var sv=document.getElementById('statusVal');
+  if(!sv)return;
+  if(settings.status==='available'){sv.textContent='Available';sv.style.color='var(--green)';}
+  else if(settings.status==='busy'){sv.textContent='Busy';sv.style.color='var(--red)';}
+  else{sv.textContent='Partially Available';sv.style.color='var(--gold)';}
+  applyAnnouncement();
+}
+function applyAnnouncement(){
+  var bar=document.getElementById('announcementBar');
+  var txt=settings.announcement||'';
+  if(txt){bar.style.display='block';document.getElementById('announcementText').textContent=txt;}
+  else bar.style.display='none';
+}
+
+// ====== CONTACT ======
+function submitContact(){
+  var name=document.getElementById('ctName').value.trim();
+  var email=document.getElementById('ctEmail').value.trim();
+  if(!name||!email){alert('নাম ও email দিন।');return;}
+  alert('✅ বার্তা পাঠানো হয়েছে! শীঘ্রই যোগাযোগ করা হবে।');
+  ['ctName','ctEmail','ctBudget','ctSubject','ctMsg'].forEach(function(id){document.getElementById(id).value='';});
+}
+
+// ====== HERO CANVAS ======
+function initHeroCanvas(){
+  var hc=document.getElementById('hc'),ctx=hc.getContext('2d');
+  var W,H,nodes=[];
+  function rsz(){W=hc.offsetWidth;H=hc.offsetHeight;hc.width=W;hc.height=H;nodes=[];for(var i=0;i<40;i++)nodes.push({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.35,vy:(Math.random()-.5)*.35,r:Math.random()*1.6+.7});}
+  rsz();window.addEventListener('resize',rsz);
+  var hexC='0123456789ABCDEF',streams=[];
+  for(var i=0;i<18;i++){streams.push({x:Math.random()*W,y:Math.random()*H-(Math.random()*H),speed:.5+Math.random()*.7,chars:[],op:Math.random()*.14+.04});for(var j=0;j<7;j++)streams[i].chars.push(hexC[Math.floor(Math.random()*16)]);}
+  var scanY=0;
+  function draw(){
+    ctx.clearRect(0,0,W,H);ctx.fillStyle='#04080f';ctx.fillRect(0,0,W,H);
+    streams.forEach(function(s){s.y+=s.speed;if(s.y>H+90){s.y=-90;s.x=Math.random()*W;}s.chars=s.chars.map(function(){return hexC[Math.floor(Math.random()*16)];});ctx.font='11px monospace';s.chars.forEach(function(c,i){ctx.fillStyle='rgba(0,212,255,'+(s.op*(1-i/s.chars.length*.7))+')';ctx.fillText(c,s.x,s.y+i*14);});});
+    nodes.forEach(function(n){n.x+=n.vx;n.y+=n.vy;if(n.x<0||n.x>W)n.vx*=-1;if(n.y<0||n.y>H)n.vy*=-1;});
+    for(var i=0;i<nodes.length;i++)for(var j=i+1;j<nodes.length;j++){var dx=nodes[i].x-nodes[j].x,dy=nodes[i].y-nodes[j].y,d=Math.sqrt(dx*dx+dy*dy);if(d<120){ctx.strokeStyle='rgba(0,212,255,'+(1-d/120)*.1+')';ctx.lineWidth=.5;ctx.beginPath();ctx.moveTo(nodes[i].x,nodes[i].y);ctx.lineTo(nodes[j].x,nodes[j].y);ctx.stroke();}}
+    nodes.forEach(function(n){ctx.beginPath();ctx.arc(n.x,n.y,n.r,0,Math.PI*2);ctx.fillStyle='rgba(0,212,255,.4)';ctx.fill();});
+    scanY=(scanY+.5)%(H+2);ctx.strokeStyle='rgba(0,212,255,.04)';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(0,scanY);ctx.lineTo(W,scanY);ctx.stroke();
+    requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+// ====== CHARTS & MAP ======
+function initCharts(){
+  new Chart(document.getElementById('rc'),{type:'radar',data:{labels:['Pen Testing','Web Sec','Network','Dev','OSINT','Scripting'],datasets:[{data:[98,95,92,88,90,93],backgroundColor:'rgba(0,212,255,0.1)',borderColor:'rgba(0,212,255,0.8)',borderWidth:2,pointBackgroundColor:'#00d4ff',pointBorderColor:'#04080f',pointBorderWidth:2,pointRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{r:{min:60,max:100,ticks:{display:false},grid:{color:'rgba(0,212,255,0.06)'},angleLines:{color:'rgba(0,212,255,0.1)'},pointLabels:{color:'rgba(0,212,255,0.7)',font:{size:9}}}}}});
+}
+function initMap(){
+  var mc=document.getElementById('mc'),mctx=mc.getContext('2d'),MW=mc.width,MH=mc.height;
+  mctx.fillStyle='#080f1a';mctx.fillRect(0,0,MW,MH);
+  mctx.strokeStyle='rgba(0,212,255,0.06)';mctx.lineWidth=1;
+  for(var i=0;i<=6;i++){mctx.beginPath();mctx.moveTo(0,i*(MH/6));mctx.lineTo(MW,i*(MH/6));mctx.stroke();mctx.beginPath();mctx.moveTo(i*(MW/6),0);mctx.lineTo(i*(MW/6),MH);mctx.stroke();}
+  var bd=[[.55,.05],[.65,.08],[.72,.12],[.78,.18],[.82,.28],[.84,.4],[.8,.55],[.72,.65],[.6,.7],[.48,.72],[.35,.68],[.24,.6],[.16,.48],[.12,.35],[.15,.22],[.22,.14],[.35,.08],[.48,.05],[.55,.05]];
+  mctx.beginPath();bd.forEach(function(p,i){if(i===0)mctx.moveTo(p[0]*MW,p[1]*MH);else mctx.lineTo(p[0]*MW,p[1]*MH);});mctx.closePath();
+  mctx.fillStyle='rgba(0,212,255,0.06)';mctx.fill();mctx.strokeStyle='rgba(0,212,255,0.2)';mctx.lineWidth=1;mctx.stroke();
+  var dhaka={x:.68*MW,y:.4*MH},pingR=0;
+  function anim(){
+    mctx.clearRect(dhaka.x-38,dhaka.y-38,76,76);mctx.fillStyle='#080f1a';mctx.fillRect(dhaka.x-38,dhaka.y-38,76,76);
+    pingR=(pingR+.6)%34;
+    mctx.beginPath();mctx.arc(dhaka.x,dhaka.y,pingR,0,Math.PI*2);mctx.strokeStyle='rgba(0,212,255,'+(0.5-pingR/34*0.5)+')';mctx.lineWidth=1.5;mctx.stroke();
+    [18,10].forEach(function(r){mctx.beginPath();mctx.arc(dhaka.x,dhaka.y,r,0,Math.PI*2);mctx.strokeStyle='rgba(0,212,255,'+(r===18?.08:.2)+')';mctx.lineWidth=1;mctx.stroke();});
+    mctx.beginPath();mctx.arc(dhaka.x,dhaka.y,4,0,Math.PI*2);mctx.fillStyle='#00d4ff';mctx.fill();
+    mctx.fillStyle='rgba(0,212,255,.9)';mctx.font='bold 10px monospace';mctx.fillText('Dhaka',dhaka.x+8,dhaka.y-7);
+    mctx.fillStyle='rgba(0,212,255,.5)';mctx.font='9px monospace';mctx.fillText('Bangladesh',dhaka.x+8,dhaka.y+5);
+    requestAnimationFrame(anim);
+  }
+  anim();
+}
+
+// ====== MISC ======
+function toggleTheme(){document.body.classList.toggle('lm');}
+function tFaq(i){var a=document.getElementById('fa'+i),ic=document.getElementById('fi'+i),open=a.style.display==='block';document.querySelectorAll('.faq-a').forEach(function(e){e.style.display='none';});document.querySelectorAll('.faq-ico').forEach(function(e){e.textContent='+';});if(!open){a.style.display='block';ic.textContent='−';}}
+function animCount(id,target,suffix,dur){var el=document.getElementById(id),v=0,step=Math.ceil(target/(dur/30));var iv=setInterval(function(){v+=step;if(v>=target){v=target;clearInterval(iv);}el.textContent=v+(suffix||'');},30);}
+function getTime(){var n=new Date();return n.getHours()+':'+String(n.getMinutes()).padStart(2,'0');}
+
+// ====== SITE INIT ======
+function initSite(){
+  applySettings();
+  renderVideoGrid();
+  renderExclusive();
+  renderBookingSection();
+  initHeroCanvas();
+  initCharts();
+  initMap();
+  animCount('s1',200,'+',1500);animCount('s2',150,'+',1500);
+  animCount('s3',50,'+',1200);animCount('s4',99,'%',1000);
+  setTimeout(function(){document.querySelectorAll('.sb-fill').forEach(function(el){el.style.width=el.getAttribute('data-w')+'%';});},800);
+  // New features
+  initReviews();
+  initCertUpload();
+  setTimeout(function(){addChatMsg('bot','আসসালামু আলাইকুম! 👋 আমি <strong>Khairul Islam</strong>-এর AI assistant।<br>Booking, pricing বা যেকোনো প্রশ্ন করুন!');},700);
+}
+
+// ====== AI CHATBOT ======
+var GEMINI_KEY='AIzaSyC964E5uJfmPW7F1MlON6GZkZHTD8rWwlQ';
+var SYS='তুমি Khairul Islam-এর AI assistant। তথ্য: Ethical Hacker & Web Developer, ২০১৯ থেকে কাজ করছেন, Dhaka। CEH v12, OSCP, CompTIA Security+, eJPT, AWS Security, PNPT সার্টিফাইড। Services: Pen Testing(৳১৫,০০০+), Web Dev(৳২০,০০০+), Security Audit(৳১০,০০০+), Bug Bounty, Training(৳৫,০০০/hr), OSINT(৳৮,০০০)। Pricing: Starter ৳৯,৯০০, Professional ৳১৫,০০০, Enterprise Custom। Telegram: https://t.me/Khairul_i, Email: khairul.cyber@proton.me, GitHub: https://github.com/bejoykhan80, Bugcrowd: https://bugcrowd.com/h/khairulislam5b75f040-4d84-4921-bd5a-8fdfbbb59ba7। বাংলায় লিখলে বাংলায়, English-এ লিখলে English-এ উত্তর দাও। সংক্ষিপ্ত উত্তর দাও।';
+var isAILoading=false;
+function toggleChat(){chatOpen=!chatOpen;document.getElementById('chatWin').style.display=chatOpen?'block':'none';document.getElementById('chatNotif').style.display='none';}
+function clearChat(){document.getElementById('chatMsgs').innerHTML='';chatHistory=[];setTimeout(function(){addChatMsg('bot','নতুন কথোপকথন শুরু হয়েছে। 👋');},300);}
+function addChatMsg(type,html){
+  var msgs=document.getElementById('chatMsgs'),d=document.createElement('div');d.className='cmsg '+type;
+  var av=type==='bot'?'KI':'U';
+  d.innerHTML='<div class="cmsg-row"><div class="cmsg-av">'+av+'</div><div class="cmsg-bubble">'+html+'</div></div><div class="cmsg-time">'+getTime()+'</div>';
+  msgs.appendChild(d);msgs.scrollTop=msgs.scrollHeight;
+}
+function showAITyping(){
+  var msgs=document.getElementById('chatMsgs'),t=document.createElement('div');t.className='cmsg bot';t.id='aityping';
+  t.innerHTML='<div class="cmsg-row"><div class="cmsg-av">KI</div><div class="ctyping"><span></span><span></span><span></span></div></div>';
+  msgs.appendChild(t);msgs.scrollTop=msgs.scrollHeight;
+}
+async function sendChat(){
+  if(isAILoading)return;
+  var inp=document.getElementById('chatIn'),txt=inp.value.trim();if(!txt)return;
+  addChatMsg('user',txt);inp.value='';
+  isAILoading=true;document.getElementById('chatSndBtn').disabled=true;showAITyping();
+  try{
+    var url='https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key='+GEMINI_KEY;
+    // Build full history with system prompt as first user message
+    var msgs=[];
+    if(chatHistory.length===0){
+      msgs.push({role:'user',parts:[{text:SYS+'\n\nUser: '+txt}]});
+    } else {
+      msgs.push({role:'user',parts:[{text:SYS}]});
+      msgs.push({role:'model',parts:[{text:'বুঝেছি, আমি Khairul Islam-এর AI assistant হিসেবে সাহায্য করব।'}]});
+      chatHistory.forEach(function(m){msgs.push(m);});
+      msgs.push({role:'user',parts:[{text:txt}]});
+    }
+    chatHistory.push({role:'user',parts:[{text:txt}]});
+    var r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:msgs})});
+    var data=await r.json();
+    var te=document.getElementById('aityping');if(te)te.remove();
+    var reply='দুঃখিত। <a class="cmsg-link" href="https://t.me/Khairul_i" target="_blank">Telegram-এ যোগাযোগ করুন</a>';
+    if(data.candidates&&data.candidates[0]&&data.candidates[0].content&&data.candidates[0].content.parts){
+      reply=data.candidates[0].content.parts[0].text;
+      chatHistory.push({role:'model',parts:[{text:reply}]});
+    }
+    reply=reply.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\*/g,'').replace(/\n/g,'<br>').replace(/(https?:\/\/[^\s<"]+)/g,'<a class="cmsg-link" href="$1" target="_blank">$1</a>');
+    addChatMsg('bot',reply);
+  }catch(e){
+    var te=document.getElementById('aityping');if(te)te.remove();
+    addChatMsg('bot','সংযোগ সমস্যা। <a class="cmsg-link" href="https://t.me/Khairul_i" target="_blank">@Khairul_i</a>');
+    console.log('Chat error:',e);
+  }
+  isAILoading=false;document.getElementById('chatSndBtn').disabled=false;
+}
+// ====== REVIEW SYSTEM ======
+var reviews=JSON.parse(localStorage.getItem('ki_reviews')||'[]');
+var selectedStars=0;
+
+function setStar(n){
+  selectedStars=n;
+  document.querySelectorAll('.star-btn').forEach(function(btn,i){
+    btn.className='star-btn'+(i<n?' on':'');
+  });
+}
+function switchRevTab(tab){
+  document.querySelectorAll('.rev-tab').forEach(function(el){el.className='rev-tab';});
+  event.target.className='rev-tab active';
+  renderUserReviews(tab);
+}
+function renderUserReviews(filter){
+  reviews=JSON.parse(localStorage.getItem('ki_reviews')||'[]');
+  var el=document.getElementById('userRevsList');if(!el)return;
+  var isAdmin=currentUser&&currentUser.role==='admin';
+  var visible=reviews.filter(function(r){
+    if(filter==='verified')return r.approved;
+    if(filter==='mine')return currentUser&&r.email===currentUser.email;
+    return r.approved||(currentUser&&r.email===currentUser.email)||(isAdmin);
+  });
+  if(!visible.length){el.innerHTML='<div style="font-size:12px;color:var(--muted);padding:10px;text-align:center;font-family:DM Mono,monospace;">কোনো review নেই।</div>';return;}
+  el.innerHTML=visible.map(function(r,i){
+    var stars='★'.repeat(r.stars)+'☆'.repeat(5-r.stars);
+    return '<div class="urev"><div class="urev-hd"><div class="urev-auth"><div class="urev-av">'+r.name[0].toUpperCase()+'</div><div><div class="urev-name">'+r.name+'</div><div class="urev-date">'+r.date+'</div></div></div>'+(isAdmin?'<button class="urev-del" onclick="deleteReview('+reviews.indexOf(r)+')">Del</button>':'')+'</div><div class="urev-stars">'+stars+'</div><div class="urev-txt">"'+r.text+'"</div>'+(!r.approved?'<span class="urev-pending">// Pending approval</span>':'')+'</div>';
+  }).join('');
+  updateRevStats();
+}
+function updateRevStats(){
+  var approved=reviews.filter(function(r){return r.approved;});
+  var total=approved.length+3;
+  var avg=(approved.reduce(function(s,r){return s+r.stars;},0)+15)/total;
+  avg=Math.round(avg*10)/10;
+  document.getElementById('revAvgNum').textContent=avg.toFixed(1);
+  document.getElementById('revAvgStars').textContent='★'.repeat(Math.round(avg))+'☆'.repeat(5-Math.round(avg));
+  document.getElementById('revAvgCount').textContent=total+' reviews';
+  document.getElementById('avgRating').textContent=avg.toFixed(1);
+  document.getElementById('totalRevCount').textContent=total;
+}
+function submitReview(){
+  if(!selectedStars){showToast('wrn','⚠️','Stars দিন।');return;}
+  var txt=document.getElementById('revTxt').value.trim();
+  if(!txt||txt.length<10){showToast('wrn','⚠️','কমপক্ষে ১০ অক্ষর লিখুন।');return;}
+  var rev={email:currentUser.email,name:currentUser.name||currentUser.email.split('@')[0],stars:selectedStars,text:txt,date:new Date().toLocaleDateString('bn-BD'),approved:false,id:Date.now()};
+  reviews.push(rev);
+  saveData('ki_reviews',reviews);
+  selectedStars=0;
+  document.querySelectorAll('.star-btn').forEach(function(b){b.className='star-btn';});
+  document.getElementById('revTxt').value='';
+  showToast('ok','✅','Review জমা হয়েছে! Admin approval-এর পর দেখাবে।');
+  sendTelegramNotify('⭐ নতুন Review!\n'+currentUser.email+': '+'★'.repeat(selectedStars)+'\n"'+txt.substring(0,50)+'"');
+  renderUserReviews('all');
+}
+function deleteReview(idx){reviews.splice(idx,1);saveData('ki_reviews',reviews);renderUserReviews('all');}
+// Admin approve review
+function approveReview(idx){reviews[idx].approved=true;saveData('ki_reviews',reviews);renderUserReviews('all');loadAdminData();}
+
+function initReviews(){
+  var u=currentUser;
+  var wb=document.getElementById('writeRevBox');
+  var lr=document.getElementById('loginToReview');
+  var mt=document.getElementById('myRevTab');
+  if(u&&u.role!=='guest'){
+    if(wb)wb.style.display='block';
+    if(lr)lr.style.display='none';
+    if(mt)mt.style.display='inline-block';
+  } else {
+    if(wb)wb.style.display='none';
+    if(lr)lr.style.display='block';
+  }
+  renderUserReviews('all');
+}
+
+// ====== CERTIFICATES (File Upload) ======
+var certFiles=JSON.parse(localStorage.getItem('ki_certs')||'[]');
+
+function initCertUpload(){
+  var drop=document.getElementById('certDropZone');
+  var inp=document.getElementById('certFileInput');
+  if(!drop||!inp)return;
+  drop.onclick=function(){inp.click();};
+  drop.ondragover=function(e){e.preventDefault();drop.style.borderColor='var(--cyan)';};
+  drop.ondragleave=function(){drop.style.borderColor='';};
+  drop.ondrop=function(e){e.preventDefault();drop.style.borderColor='';handleCertFiles(e.dataTransfer.files);};
+  inp.onchange=function(){handleCertFiles(inp.files);};
+  renderCerts();
+}
+function handleCertFiles(files){
+  Array.from(files).forEach(function(file){
+    if(file.size>5*1024*1024){showToast('wrn','⚠️',file.name+' বড় (max 5MB)');return;}
+    var reader=new FileReader();
+    reader.onload=function(e){
+      certFiles.push({name:file.name,data:e.target.result,type:file.type,date:new Date().toLocaleDateString('bn-BD')});
+      saveData('ki_certs',certFiles);
+      renderCerts();
+      showToast('ok','✅',file.name+' যোগ হয়েছে!');
+    };
+    reader.readAsDataURL(file);
+  });
+}
+function renderCerts(){
+  var el=document.getElementById('certGridList');if(!el)return;
+  if(!certFiles.length){el.innerHTML='<div style="font-size:11px;color:var(--muted);font-family:DM Mono,monospace;">কোনো certificate নেই।</div>';return;}
+  el.innerHTML=certFiles.map(function(c,i){
+    var ic=c.type&&c.type.includes('image')?'🖼️':c.type&&c.type.includes('pdf')?'📄':'📎';
+    return '<div class="ucert"><button class="ucert-del" onclick="deleteCert('+i+')">✕</button><div class="ucert-ic">'+ic+'</div><div class="ucert-nm">'+c.name.substring(0,20)+'</div><div class="ucert-dl" onclick="downloadCert('+i+')">⬇ Download</div></div>';
+  }).join('');
+}
+function deleteCert(i){certFiles.splice(i,1);saveData('ki_certs',certFiles);renderCerts();}
+function downloadCert(i){
+  var c=certFiles[i];var a=document.createElement('a');a.href=c.data;a.download=c.name;a.click();
+}
+
+// ====== TOAST NOTIFICATIONS ======
+function showToast(type,ic,msg,duration){
+  duration=duration||3500;
+  var wrap=document.getElementById('toastWrap');if(!wrap)return;
+  var t=document.createElement('div');t.className='toast '+type;
+  t.innerHTML='<div class="toast-ic">'+ic+'</div><div class="toast-msg">'+msg+'</div><div class="toast-x" onclick="this.parentElement.remove()">✕</div>';
+  wrap.appendChild(t);
+  setTimeout(function(){if(t.parentElement)t.remove();},duration);
+}
+
+// ====== TELEGRAM NOTIFICATION ======
+// তোমার Telegram Bot Token ও Chat ID বসাও
+var TG_BOT_TOKEN='YOUR_BOT_TOKEN'; // @BotFather থেকে নাও
+var TG_CHAT_ID='YOUR_CHAT_ID';     // তোমার Telegram user ID
+
+function sendTelegramNotify(msg){
+  if(TG_BOT_TOKEN==='YOUR_BOT_TOKEN')return; // Not configured
+  var url='https://api.telegram.org/bot'+TG_BOT_TOKEN+'/sendMessage';
+  fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:TG_CHAT_ID,text:'🔔 KI Portfolio\n\n'+msg,parse_mode:'HTML'})}).catch(function(){});
+}
+
+function qm(txt){document.getElementById('chatIn').value=txt;sendChat();}
+</script>
+</body>
+</html>
