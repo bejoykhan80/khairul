@@ -21,15 +21,16 @@
       <div class="auth-tab" id="sTab" onclick="switchTab('s')">Sign Up</div>
     </div>
     <div id="lForm">
-      <div class="form-field"><label>Email</label><input type="email" id="lEmail" placeholder="your@email.com" onkeydown="if(event.key==='Enter')doLogin()"/></div>
-      <div class="form-field"><label>Password</label><input type="password" id="lPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/></div>
-      <button class="btn-primary" onclick="doLogin()">Login →</button>
+      <div class="form-field"><label>Email</label><input type="email" id="lEmail" placeholder="your@email.com" maxlength="100" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+      <div class="form-field"><label>Password</label><input type="password" id="lPass" placeholder="••••••••" maxlength="128" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+      <button class="btn-primary" id="loginBtn" onclick="doLogin()">Login →</button>
     </div>
     <div id="sForm" style="display:none;">
-      <div class="form-field"><label>Name</label><input type="text" id="sName" placeholder="তোমার নাম"/></div>
-      <div class="form-field"><label>Email</label><input type="email" id="sEmail" placeholder="your@email.com"/></div>
-      <div class="form-field"><label>Password</label><input type="password" id="sPass" placeholder="Min 6 characters"/></div>
-      <button class="btn-primary" onclick="doSignup()">Create Account →</button>
+      <div class="form-field"><label>Name</label><input type="text" id="sName" placeholder="তোমার নাম" maxlength="50"/></div>
+      <div class="form-field"><label>Email</label><input type="email" id="sEmail" placeholder="your@email.com" maxlength="100"/></div>
+      <div class="form-field"><label>Password</label><input type="password" id="sPass" placeholder="Min 6 characters" maxlength="128"/></div>
+      <div class="form-field"><label>Confirm Password</label><input type="password" id="sPassConfirm" placeholder="পাসওয়ার্ড আবার দিন" maxlength="128" onkeydown="if(event.key==='Enter')doSignup()"/></div>
+      <button class="btn-primary" id="signupBtn" onclick="doSignup()">Create Account →</button>
     </div>
     <div class="form-err" id="authErr"></div>
     <div class="skip-link" onclick="skipAuth()">// Guest হিসেবে দেখুন →</div>

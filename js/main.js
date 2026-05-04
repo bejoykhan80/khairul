@@ -34,7 +34,8 @@ function isValidLength(s,min,max){var l=s.trim().length;return l>=min&&l<=max;}
 var loginAttempts=JSON.parse(localStorage.getItem('ki_attempts')||'{"count":0,"ts":0}');
 function checkRateLimit(){
   var now=Date.now();
-  if(now-loginAttempts.ts>600000){loginAttempts={count:0,ts:now};}
+  // Reset window if 10 minutes passed since first failed attempt
+  if(loginAttempts.ts&&now-loginAttempts.ts>600000){loginAttempts={count:0,ts:0};}
   if(loginAttempts.count>=5){
     var wait=Math.ceil((600000-(now-loginAttempts.ts))/60000);
     document.getElementById('authErr').textContent='অনেক চেষ্টা হয়েছে। '+wait+' মিনিট পর আবার চেষ্টা করুন।';
@@ -43,7 +44,8 @@ function checkRateLimit(){
   return true;
 }
 function recordFailedAttempt(){
-  loginAttempts.count++;loginAttempts.ts=loginAttempts.ts||Date.now();
+  if(!loginAttempts.ts)loginAttempts.ts=Date.now(); // start window on first failure
+  loginAttempts.count++;
   localStorage.setItem('ki_attempts',JSON.stringify(loginAttempts));
 }
 function resetAttempts(){loginAttempts={count:0,ts:0};localStorage.setItem('ki_attempts',JSON.stringify(loginAttempts));}
@@ -61,54 +63,87 @@ function switchTab(t){
 
 async function doLogin(){
   if(!checkRateLimit())return;
-  var e=document.getElementById('lEmail').value.trim();
+  var btn=document.getElementById('loginBtn');
+  if(btn.disabled)return;
+
+  var e=document.getElementById('lEmail').value.trim().toLowerCase(); // Fix #1: normalize email
   var p=document.getElementById('lPass').value;
   if(!e||!p){document.getElementById('authErr').textContent='Email ও Password দিন।';return;}
   if(!isValidEmail(e)){document.getElementById('authErr').textContent='সঠিক Email দিন।';return;}
   if(!isValidLength(p,6,128)){document.getElementById('authErr').textContent='Password কমপক্ষে ৬ অক্ষর।';return;}
 
-  var hashed=await hashPass(p);
+  // Fix #3: disable button to prevent double-click
+  btn.disabled=true;btn.textContent='Loading...';
+  document.getElementById('authErr').textContent='';
 
-  // Admin check
-  var {data:adminRow}=await sb.from('admin_settings').select('value').eq('key','admin_pass').single();
-  var adminPass=adminRow?adminRow.value:await hashPass('ki@2026#secure');
-  if(e===ADMIN_EMAIL&&hashed===adminPass){
-    resetAttempts();
-    currentUser={email:e,role:'admin',name:'Khairul Islam'};
-    loginSuccess();return;
-  }
+  try{
+    var hashed=await hashPass(p);
 
-  // User check
-  var {data:user}=await sb.from('users').select('*').eq('email',e).single();
-  if(user&&user.pass===hashed){
-    resetAttempts();
-    currentUser={email:e,role:'user',name:user.name||e.split('@')[0]};
-    loginSuccess();
-  } else {
-    recordFailedAttempt();
-    document.getElementById('authErr').textContent='Email বা Password ভুল।';
+    // Fix #8: only query admin_settings when email matches admin email
+    if(e===ADMIN_EMAIL){
+      var {data:adminRow}=await sb.from('admin_settings').select('value').eq('key','admin_pass').single();
+      var adminPass=adminRow?adminRow.value:'';
+      if(adminPass&&hashed===adminPass){
+        resetAttempts();
+        currentUser={email:e,role:'admin',name:'Khairul Islam'};
+        loginSuccess();return;
+      }
+      // Fix #2: admin email + wrong password — don't fall through to users table
+      recordFailedAttempt();
+      document.getElementById('authErr').textContent='Email বা Password ভুল।';
+      return;
+    }
+
+    // Regular user check
+    var {data:user}=await sb.from('users').select('*').eq('email',e).single();
+    if(user&&user.pass===hashed){
+      resetAttempts();
+      currentUser={email:e,role:'user',name:user.name||e.split('@')[0]};
+      loginSuccess();
+    } else {
+      recordFailedAttempt();
+      document.getElementById('authErr').textContent='Email বা Password ভুল।';
+    }
+  }finally{
+    btn.disabled=false;btn.textContent='Login →';
   }
 }
 
 async function doSignup(){
+  var btn=document.getElementById('signupBtn');
+  if(btn.disabled)return;
+
   var name=document.getElementById('sName').value.trim();
-  var e=document.getElementById('sEmail').value.trim();
+  var e=document.getElementById('sEmail').value.trim().toLowerCase(); // Fix #1: normalize email
   var p=document.getElementById('sPass').value;
-  if(!name||!e||!p){document.getElementById('authErr').textContent='সব ফিল্ড পূরণ করুন।';return;}
+  var pc=document.getElementById('sPassConfirm').value;
+
+  if(!name||!e||!p||!pc){document.getElementById('authErr').textContent='সব ফিল্ড পূরণ করুন।';return;}
   if(!isValidLength(name,2,50)){document.getElementById('authErr').textContent='নাম ২-৫০ অক্ষরের মধ্যে হতে হবে।';return;}
   if(!isValidEmail(e)){document.getElementById('authErr').textContent='সঠিক Email দিন।';return;}
   if(!isValidLength(p,6,128)){document.getElementById('authErr').textContent='Password কমপক্ষে ৬ অক্ষর।';return;}
+  // Fix #5: confirm password check
+  if(p!==pc){document.getElementById('authErr').textContent='Password দুটো মিলছে না।';return;}
   if(e===ADMIN_EMAIL){document.getElementById('authErr').textContent='এই email ব্যবহার করা যাবে না।';return;}
 
-  var {data:existing}=await sb.from('users').select('id').eq('email',e).single();
-  if(existing){document.getElementById('authErr').textContent='Email ইতিমধ্যে registered।';return;}
+  // Fix #4: disable button to prevent double-click
+  btn.disabled=true;btn.textContent='Creating...';
+  document.getElementById('authErr').textContent='';
 
-  var hashed=await hashPass(p);
-  var {error}=await sb.from('users').insert({name:sanitize(name),email:e,pass:hashed,phone:'',join_date:new Date().toLocaleDateString('bn-BD')});
-  if(error){document.getElementById('authErr').textContent='Registration ব্যর্থ হয়েছে।';return;}
+  try{
+    var {data:existing}=await sb.from('users').select('id').eq('email',e).single();
+    if(existing){document.getElementById('authErr').textContent='Email ইতিমধ্যে registered।';return;}
 
-  currentUser={email:e,role:'user',name};
-  loginSuccess();
+    var hashed=await hashPass(p);
+    // Fix #6: store raw name (not sanitized) — sanitize on display, not on storage
+    var {error}=await sb.from('users').insert({name:name,email:e,pass:hashed,phone:'',join_date:new Date().toLocaleDateString('bn-BD')});
+    if(error){document.getElementById('authErr').textContent='Registration ব্যর্থ হয়েছে।';return;}
+
+    currentUser={email:e,role:'user',name:name};
+    loginSuccess();
+  }finally{
+    btn.disabled=false;btn.textContent='Create Account →';
+  }
 }
 
 function loginSuccess(){
@@ -150,6 +185,11 @@ function doLogout(){
   document.getElementById('dashBtn').style.display='none';
   document.getElementById('authErr').textContent='';
   chatOpen=false;
+  // Fix #7: clear all auth form fields on logout
+  ['lEmail','lPass','sName','sEmail','sPass','sPassConfirm'].forEach(function(id){
+    var el=document.getElementById(id);if(el)el.value='';
+  });
+  switchTab('l');
 }
 
 // ====== ADMIN ======
