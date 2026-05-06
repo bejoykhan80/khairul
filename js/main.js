@@ -2,16 +2,29 @@
 var sb = null;
 var ADMIN_EMAIL = '';
 var _configReady = (async function loadConfig(){
+  // Disable buttons while Supabase connects (prevents click before sb is ready)
+  ['loginBtn','signupBtn'].forEach(function(id){
+    var el=document.getElementById(id);
+    if(el){el.disabled=true;el.dataset.orig=el.textContent;el.textContent='...';}
+  });
   try {
     var r = await fetch('/api/config');
     if(!r.ok) throw new Error('HTTP '+r.status);
     var c = await r.json();
     if(!c.supaUrl || !c.supaKey) throw new Error('Incomplete config');
+    if(typeof supabase==='undefined') throw new Error('Supabase SDK not loaded');
     sb = supabase.createClient(c.supaUrl, c.supaKey);
     ADMIN_EMAIL = c.adminEmail;
-  } catch(e) {
+  } catch(err) {
+    console.error('Config load failed:', err);
     var errEl = document.getElementById('authErr');
     if(errEl) errEl.textContent = 'সাইট লোড হয়নি। Page refresh করুন।';
+  } finally {
+    // Re-enable buttons regardless of success or failure
+    ['loginBtn','signupBtn'].forEach(function(id){
+      var el=document.getElementById(id);
+      if(el){el.disabled=false;el.textContent=el.dataset.orig||el.textContent;}
+    });
   }
 })();
 
@@ -92,23 +105,23 @@ async function doLogin(){
   try{
     var hashed=await hashPass(p);
 
-    // Fix #8: only query admin_settings when email matches admin email
     if(e===ADMIN_EMAIL){
-      var {data:adminRow}=await sb.from('admin_settings').select('value').eq('key','admin_pass').single();
+      var {data:adminRow,error:aErr}=await sb.from('admin_settings').select('value').eq('key','admin_pass').maybeSingle();
+      if(aErr){console.error('Admin check error:',aErr);document.getElementById('authErr').textContent='সার্ভার সমস্যা। পুনরায় চেষ্টা করুন।';return;}
       var adminPass=adminRow?adminRow.value:'';
       if(adminPass&&hashed===adminPass){
         resetAttempts();
         currentUser={email:e,role:'admin',name:'Khairul Islam'};
         loginSuccess();return;
       }
-      // Fix #2: admin email + wrong password — don't fall through to users table
       recordFailedAttempt();
       document.getElementById('authErr').textContent='Email বা Password ভুল।';
       return;
     }
 
-    // Regular user check
-    var {data:user}=await sb.from('users').select('*').eq('email',e).single();
+    // Regular user — use maybeSingle() so 0 rows returns null cleanly (no PGRST116 error)
+    var {data:user,error:uErr}=await sb.from('users').select('*').eq('email',e).maybeSingle();
+    if(uErr){console.error('Login user lookup error:',uErr);document.getElementById('authErr').textContent='সার্ভার সমস্যা। পুনরায় চেষ্টা করুন।';return;}
     if(user&&user.pass===hashed){
       resetAttempts();
       currentUser={email:e,role:'user',name:user.name||e.split('@')[0]};
@@ -117,6 +130,9 @@ async function doLogin(){
       recordFailedAttempt();
       document.getElementById('authErr').textContent='Email বা Password ভুল।';
     }
+  }catch(err){
+    console.error('Login error:',err);
+    document.getElementById('authErr').textContent='অপ্রত্যাশিত সমস্যা। পুনরায় চেষ্টা করুন।';
   }finally{
     btn.disabled=false;btn.textContent='Login →';
   }
@@ -141,21 +157,40 @@ async function doSignup(){
   if(p!==pc){document.getElementById('authErr').textContent='Password দুটো মিলছে না।';return;}
   if(e===ADMIN_EMAIL){document.getElementById('authErr').textContent='এই email ব্যবহার করা যাবে না।';return;}
 
-  // Fix #4: disable button to prevent double-click
   btn.disabled=true;btn.textContent='Creating...';
   document.getElementById('authErr').textContent='';
 
   try{
-    var {data:existing}=await sb.from('users').select('id').eq('email',e).single();
+    // Bug fix: use maybeSingle() — returns {data:null, error:null} for 0 rows
+    // .single() incorrectly returns PGRST116 error for 0 rows in Supabase SDK v2
+    var {data:existing,error:findErr}=await sb.from('users').select('id').eq('email',e).maybeSingle();
+    if(findErr){
+      console.error('User lookup error:',findErr);
+      document.getElementById('authErr').textContent='সার্ভার সমস্যা। পুনরায় চেষ্টা করুন।';
+      return;
+    }
     if(existing){document.getElementById('authErr').textContent='Email ইতিমধ্যে registered।';return;}
 
     var hashed=await hashPass(p);
-    // Fix #6: store raw name (not sanitized) — sanitize on display, not on storage
-    var {error}=await sb.from('users').insert({name:name,email:e,pass:hashed,phone:'',join_date:new Date().toLocaleDateString('bn-BD')});
-    if(error){document.getElementById('authErr').textContent='Registration ব্যর্থ হয়েছে।';return;}
+
+    // Bug fix: safe join_date with fallback if bn-BD locale unsupported
+    var joinDate='';
+    try{joinDate=new Date().toLocaleDateString('bn-BD');}catch(le){joinDate=new Date().toISOString().split('T')[0];}
+
+    var {error:insertErr}=await sb.from('users').insert({name:name,email:e,pass:hashed,phone:'',join_date:joinDate});
+    if(insertErr){
+      console.error('Signup insert error:',insertErr);
+      // 23505 = unique_violation — duplicate email from race condition
+      var msg=insertErr.code==='23505'?'Email ইতিমধ্যে registered।':'Registration ব্যর্থ হয়েছে। পুনরায় চেষ্টা করুন।';
+      document.getElementById('authErr').textContent=msg;
+      return;
+    }
 
     currentUser={email:e,role:'user',name:name};
     loginSuccess();
+  }catch(err){
+    console.error('Signup unexpected error:',err);
+    document.getElementById('authErr').textContent='অপ্রত্যাশিত সমস্যা। পুনরায় চেষ্টা করুন।';
   }finally{
     btn.disabled=false;btn.textContent='Create Account →';
   }
