@@ -47,6 +47,41 @@
   </div>
 </div>
 
+<!-- ======= PROJECT MODAL ======= -->
+<div class="overlay" id="projOverlay" style="display:none;" onclick="if(event.target===this)closeProject()">
+  <div class="proj-modal">
+    <div class="proj-modal-head">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div class="proj-modal-icon" id="pmIcon"></div>
+        <div>
+          <div class="proj-modal-cat" id="pmCat"></div>
+          <div class="proj-modal-title" id="pmTitle"></div>
+        </div>
+      </div>
+      <button class="close-btn" onclick="closeProject()">✕</button>
+    </div>
+    <div class="proj-modal-body">
+      <p class="proj-modal-desc" id="pmDesc"></p>
+      <div id="pmVideo" style="display:none;margin:14px 0;">
+        <div class="proj-modal-label">🎬 Project Video</div>
+        <div class="proj-vid-wrap"><iframe id="pmVideoFrame" src="" allowfullscreen loading="lazy"></iframe></div>
+      </div>
+      <div id="pmDoc" style="display:none;margin:14px 0;">
+        <div class="proj-modal-label">📄 Document / Report</div>
+        <a id="pmDocLink" href="#" target="_blank" class="proj-doc-btn">⬇ Download <span id="pmDocName"></span></a>
+      </div>
+      <div id="pmLink" style="display:none;margin:14px 0;">
+        <div class="proj-modal-label">🔗 External Link</div>
+        <a id="pmExtLink" href="#" target="_blank" class="proj-doc-btn">View Project ↗</a>
+      </div>
+      <div style="margin-top:14px;">
+        <div class="proj-modal-label">🛠️ Tech Stack</div>
+        <div id="pmTech" style="margin-top:6px;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ======= BLOG MODAL ======= -->
 <div class="overlay" id="blogOverlay" style="display:none;" onclick="if(event.target===this)closeBlog()">
   <div class="blog-modal">
@@ -73,6 +108,7 @@
       <div class="admin-tab active" onclick="switchAdminTab('stats')">📊 Stats</div>
       <div class="admin-tab" onclick="switchAdminTab('users')">👥 Users</div>
       <div class="admin-tab" onclick="switchAdminTab('bookings')">📅 Bookings</div>
+      <div class="admin-tab" onclick="switchAdminTab('projects')">🗂️ Projects</div>
       <div class="admin-tab" onclick="switchAdminTab('videos')">🎬 Videos</div>
       <div class="admin-tab" onclick="switchAdminTab('reviews')">⭐ Reviews</div>
       <div class="admin-tab" onclick="switchAdminTab('chats')">💬 Chats</div>
@@ -111,6 +147,41 @@
         <div class="admin-card">
           <div class="admin-card-title">📅 All Bookings</div>
           <div id="adminBookingList"></div>
+        </div>
+      </div>
+      <div class="admin-panel" id="ap-projects">
+        <div class="admin-card">
+          <div class="admin-card-title">🗂️ Add / Edit Projects</div>
+          <div class="admin-grid2">
+            <div class="form-field"><label>Project Title *</label><input type="text" id="pjTitle" placeholder="Project-এর নাম"/></div>
+            <div class="form-field"><label>Category *</label><input type="text" id="pjCat" placeholder="Pen Test / Web App / CTF ..."/></div>
+          </div>
+          <div class="form-field"><label>Short Description</label><input type="text" id="pjDesc" placeholder="এক লাইনে সংক্ষিপ্ত বিবরণ"/></div>
+          <div class="form-field"><label>Full Description</label><textarea id="pjFullDesc" placeholder="বিস্তারিত বিবরণ..." style="min-height:80px;"></textarea></div>
+          <div class="admin-grid2">
+            <div class="form-field"><label>Tech Stack</label><input type="text" id="pjTech" placeholder="Burp Suite · Nmap · Python"/></div>
+            <div class="form-field"><label>Icon (Emoji)</label><input type="text" id="pjIcon" placeholder="🔍" maxlength="4"/></div>
+          </div>
+          <div class="form-field"><label>Color Theme</label>
+            <select id="pjColor" style="background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:10px;border-radius:4px;width:100%;outline:none;font-size:12px;">
+              <option value="a">🟡 Gold</option>
+              <option value="b">🔵 Cyan</option>
+              <option value="c">🟢 Green</option>
+              <option value="d">🟣 Purple</option>
+            </select>
+          </div>
+          <div class="form-field"><label>YouTube Video URL (Optional)</label><input type="text" id="pjVideo" placeholder="https://youtube.com/watch?v=..."/></div>
+          <div class="form-field">
+            <label>Document / Report File (PDF, DOC, ZIP — max 10MB)</label>
+            <input type="file" id="pjFile" accept=".pdf,.doc,.docx,.zip,.txt,.png,.jpg" style="background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:8px;border-radius:4px;width:100%;font-size:12px;cursor:pointer;"/>
+            <div id="pjUploadStatus" style="font-size:11px;color:var(--cyan);font-family:'DM Mono',monospace;margin-top:4px;"></div>
+          </div>
+          <div class="form-field"><label>External Link (Optional)</label><input type="text" id="pjLink" placeholder="https://github.com/... বা অন্য URL"/></div>
+          <button class="btn-primary" onclick="addProject()">+ Project যোগ করুন</button>
+        </div>
+        <div class="admin-card" style="margin-top:10px;">
+          <div class="admin-card-title">📋 Existing Projects</div>
+          <div id="adminProjList"></div>
         </div>
       </div>
       <div class="admin-panel" id="ap-videos">
@@ -421,13 +492,8 @@
 
 <!-- PROJECTS -->
 <div class="sec" id="work" style="padding-top:0;">
-  <div class="sec-hd"><div class="sec-tag">Recent Projects</div><div class="sec-line"></div><div class="sec-num">09</div></div>
-  <div class="projs">
-    <div class="proj"><div class="pimg a">🔍</div><div class="pbody"><div class="ptag">Pen Test</div><div class="ptitle">E-Commerce Security Audit</div><div class="pdesc">১২টি critical vulnerability পাওয়া ও ঠিক।</div></div><div class="pfoot"><span class="ptech">Burp · Nmap</span><span class="plink">View ↗</span></div></div>
-    <div class="proj"><div class="pimg b">🌐</div><div class="pbody"><div class="ptag">Web App</div><div class="ptitle">Corporate Dashboard</div><div class="pdesc">Fortune 500 কোম্পানির নিরাপদ analytics।</div></div><div class="pfoot"><span class="ptech">React · Node.js</span><span class="plink">View ↗</span></div></div>
-    <div class="proj"><div class="pimg c">🏆</div><div class="pbody"><div class="ptag">CTF</div><div class="ptitle">National CTF 2025</div><div class="pdesc">জাতীয় CTF-এ ১ম স্থান।</div></div><div class="pfoot"><span class="ptech">Multiple Tools</span><span class="plink">View ↗</span></div></div>
-    <div class="proj"><div class="pimg d">📊</div><div class="pbody"><div class="ptag">Bugcrowd</div><div class="ptitle">Bug Bounty Findings</div><div class="pdesc">Bugcrowd-এ critical bugs রিপোর্ট।</div></div><div class="pfoot"><span class="ptech">Maltego · Shodan</span><a class="plink" href="https://bugcrowd.com/h/khairulislam5b75f040-4d84-4921-bd5a-8fdfbbb59ba7" target="_blank">View ↗</a></div></div>
-  </div>
+  <div class="sec-hd"><div class="sec-tag">Recent Projects</div><div class="sec-line"></div><div class="sec-num" id="projCount">09</div></div>
+  <div class="projs" id="projsGrid"><div style="color:var(--muted);font-size:12px;padding:20px;font-family:'DM Mono',monospace;">Loading projects...</div></div>
 </div>
 
 <!-- PRICING -->

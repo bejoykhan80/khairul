@@ -258,6 +258,21 @@ canvas#hc{display:block;width:100%;height:360px;}
 .rev-name{font-size:12px;color:var(--text);font-weight:500;}
 .rev-role{font-size:10px;color:var(--muted);}
 
+/* ======= PROJECT MODAL ======= */
+.proj-modal{background:var(--bg2);border:1px solid var(--border);border-radius:8px;width:92%;max-width:680px;max-height:88vh;display:flex;flex-direction:column;overflow:hidden;}
+.proj-modal-head{display:flex;justify-content:space-between;align-items:flex-start;padding:18px 20px 14px;border-bottom:1px solid var(--border);gap:12px;}
+.proj-modal-icon{font-size:28px;width:48px;height:48px;display:flex;align-items:center;justify-content:center;background:var(--bg3);border-radius:8px;flex-shrink:0;}
+.proj-modal-cat{font-size:10px;letter-spacing:2px;color:var(--cyan);text-transform:uppercase;font-family:'DM Mono',monospace;margin-bottom:4px;}
+.proj-modal-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--text);}
+.proj-modal-body{padding:18px 20px;overflow-y:auto;flex:1;}
+.proj-modal-desc{font-size:13px;color:rgba(224,234,255,.85);line-height:1.8;margin-bottom:4px;}
+.proj-modal-label{font-size:10px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;font-family:'DM Mono',monospace;margin-bottom:8px;}
+.proj-vid-wrap{position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:6px;background:var(--bg3);}
+.proj-vid-wrap iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:none;}
+.proj-doc-btn{display:inline-flex;align-items:center;gap:6px;background:var(--bg3);border:1px solid var(--border);color:var(--cyan);padding:9px 16px;border-radius:5px;font-size:12px;text-decoration:none;font-family:'DM Mono',monospace;transition:border-color .2s;}
+.proj-doc-btn:hover{border-color:var(--cyan);}
+.proj-tech-tag{display:inline-block;background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:4px 10px;border-radius:4px;font-size:11px;font-family:'DM Mono',monospace;margin:2px;}
+
 /* ======= BLOG ======= */
 .blogs{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:8px;}
 .blog{background:var(--bg2);border:1px solid var(--border);border-radius:6px;overflow:hidden;cursor:pointer;transition:border-color .25s,transform .25s;}

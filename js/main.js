@@ -250,12 +250,13 @@ function closeAdmin(){document.getElementById('adminOverlay').style.display='non
 function switchAdminTab(t){
   document.querySelectorAll('.admin-tab').forEach(function(el){el.className='admin-tab';});
   document.querySelectorAll('.admin-panel').forEach(function(el){el.className='admin-panel';});
-  var tabs=['stats','users','bookings','videos','reviews','chats','settings'];
+  var tabs=['stats','users','bookings','projects','videos','reviews','chats','settings'];
   var idx=tabs.indexOf(t);
   if(idx>=0)document.querySelectorAll('.admin-tab')[idx].className='admin-tab active';
   document.getElementById('ap-'+t).className='admin-panel active';
   renderAdminContent();
   if(t==='reviews')renderAdminReviews();
+  if(t==='projects')renderAdminProjects();
 }
 
 async function renderAdminReviews(){
@@ -381,6 +382,152 @@ async function saveAnnouncement(){
   var announcement=document.getElementById('announcement').value;
   await sb.from('settings').upsert({id:1,announcement});
   applyAnnouncement(announcement);alert('Announcement posted!');
+}
+
+// ====== PROJECTS ======
+var _projColors={a:'#c9a84c',b:'#00d4ff',c:'#00ff88',d:'#7f77dd'};
+
+async function renderProjectsGrid(){
+  var el=document.getElementById('projsGrid');
+  if(!el||!sb)return;
+  var {data:projs,error}=await sb.from('projects').select('*').order('created_at',{ascending:false});
+  if(error||!projs){el.innerHTML='<div style="color:var(--muted);font-size:12px;padding:20px;font-family:\'DM Mono\',monospace;">Projects load হয়নি।</div>';return;}
+  var cnt=document.getElementById('projCount');if(cnt)cnt.textContent=String(projs.length).padStart(2,'0');
+  el.innerHTML=projs.map(function(p){
+    var col=_projColors[p.color]||'#00d4ff';
+    return '<div class="proj" onclick="openProject('+p.id+')">'+
+      '<div class="pimg '+sanitize(p.color)+'" style="font-size:24px;">'+sanitize(p.icon)+'</div>'+
+      '<div class="pbody">'+
+        '<div class="ptag" style="color:'+col+';">'+sanitize(p.category)+'</div>'+
+        '<div class="ptitle">'+sanitize(p.title)+'</div>'+
+        '<div class="pdesc">'+sanitize(p.description)+'</div>'+
+      '</div>'+
+      '<div class="pfoot">'+
+        '<span class="ptech">'+sanitize(p.tech.split('·')[0].trim())+(p.tech.includes('·')?' · ...':'')+'</span>'+
+        '<span class="plink">View ↗</span>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+var _projsCache={};
+async function openProject(id){
+  // Load from cache or fetch
+  var p=_projsCache[id];
+  if(!p){
+    var {data,error}=await sb.from('projects').select('*').eq('id',id).maybeSingle();
+    if(error||!data)return;
+    p=data;_projsCache[id]=p;
+  }
+  document.getElementById('pmIcon').textContent=p.icon||'🔍';
+  document.getElementById('pmCat').textContent=p.category;
+  document.getElementById('pmTitle').textContent=p.title;
+  document.getElementById('pmDesc').textContent=p.full_desc||p.description;
+  // Tech tags
+  var techEl=document.getElementById('pmTech');
+  techEl.innerHTML=(p.tech||'').split('·').map(function(t){return t.trim()?'<span class="proj-tech-tag">'+sanitize(t.trim())+'</span>':'';}).join('');
+  // Video
+  var vid=document.getElementById('pmVideo');
+  var frame=document.getElementById('pmVideoFrame');
+  if(p.video_url){
+    var vurl=p.video_url;
+    if(vurl.includes('watch?v='))vurl='https://www.youtube.com/embed/'+vurl.split('v=')[1].split('&')[0];
+    else if(vurl.includes('youtu.be/'))vurl='https://www.youtube.com/embed/'+vurl.split('youtu.be/')[1].split('?')[0];
+    frame.src=vurl;vid.style.display='block';
+  } else {vid.style.display='none';frame.src='';}
+  // Document
+  var docEl=document.getElementById('pmDoc');
+  var docLink=document.getElementById('pmDocLink');
+  var docName=document.getElementById('pmDocName');
+  if(p.doc_url){
+    docLink.href=p.doc_url;
+    docName.textContent=p.doc_name||'Document';
+    docEl.style.display='block';
+  } else {docEl.style.display='none';}
+  // External link
+  var lnkEl=document.getElementById('pmLink');
+  var extLink=document.getElementById('pmExtLink');
+  if(p.link){extLink.href=p.link;lnkEl.style.display='block';}
+  else{lnkEl.style.display='none';}
+  document.getElementById('projOverlay').style.display='flex';
+  document.body.style.overflow='hidden';
+}
+
+function closeProject(){
+  document.getElementById('projOverlay').style.display='none';
+  document.body.style.overflow='';
+  var frame=document.getElementById('pmVideoFrame');if(frame)frame.src='';
+}
+
+async function renderAdminProjects(){
+  var el=document.getElementById('adminProjList');if(!el)return;
+  var {data:projs}=await sb.from('projects').select('*').order('created_at',{ascending:false});
+  projs=projs||[];
+  if(!projs.length){el.innerHTML='<div style="font-size:12px;color:var(--muted);padding:10px;">কোনো project নেই।</div>';return;}
+  el.innerHTML=projs.map(function(p){
+    return '<div class="bkrow" style="align-items:flex-start;">'+
+      '<div class="bkinfo">'+
+        '<div class="bk-user-txt">'+sanitize(p.icon)+' '+sanitize(p.title)+'</div>'+
+        '<div class="bk-det" style="color:var(--cyan);">'+sanitize(p.category)+'</div>'+
+        '<div class="bk-det">'+sanitize(p.description)+'</div>'+
+        (p.doc_url?'<div class="bk-det" style="color:var(--green);">📄 '+sanitize(p.doc_name||'Document')+'</div>':'')+
+        (p.video_url?'<div class="bk-det" style="color:var(--gold);">🎬 Video attached</div>':'')+
+      '</div>'+
+      '<div class="bk-action-btns">'+
+        '<button class="reject-btn" onclick="deleteProject('+p.id+')">Del</button>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+async function addProject(){
+  var title=document.getElementById('pjTitle').value.trim();
+  var cat=document.getElementById('pjCat').value.trim();
+  var desc=document.getElementById('pjDesc').value.trim();
+  var fullDesc=document.getElementById('pjFullDesc').value.trim();
+  var tech=document.getElementById('pjTech').value.trim();
+  var icon=document.getElementById('pjIcon').value.trim()||'🔍';
+  var color=document.getElementById('pjColor').value;
+  var videoRaw=document.getElementById('pjVideo').value.trim();
+  var link=document.getElementById('pjLink').value.trim();
+  var fileInput=document.getElementById('pjFile');
+  var statusEl=document.getElementById('pjUploadStatus');
+
+  if(!title||!cat){showToast('wrn','⚠️','Title ও Category আবশ্যক।');return;}
+
+  var docUrl='',docName='';
+  if(fileInput.files&&fileInput.files[0]){
+    var file=fileInput.files[0];
+    if(file.size>10*1024*1024){showToast('wrn','⚠️','File সর্বোচ্চ 10MB হতে পারবে।');return;}
+    statusEl.textContent='⏳ Uploading...';
+    var ext=file.name.split('.').pop();
+    var path='docs/'+Date.now()+'.'+ext;
+    var {error:upErr}=await sb.storage.from('project-files').upload(path,file,{upsert:true});
+    if(upErr){statusEl.textContent='❌ Upload failed: '+upErr.message;return;}
+    var {data:urlData}=sb.storage.from('project-files').getPublicUrl(path);
+    docUrl=urlData.publicUrl;docName=file.name;
+    statusEl.textContent='✅ Uploaded: '+file.name;
+  }
+
+  var {error}=await sb.from('projects').insert({title,category:cat,description:desc,full_desc:fullDesc,tech,icon,color,video_url:videoRaw,doc_url:docUrl,doc_name:docName,link});
+  if(error){showToast('wrn','⚠️','Project যোগ ব্যর্থ: '+error.message);return;}
+
+  // Clear form
+  ['pjTitle','pjCat','pjDesc','pjFullDesc','pjTech','pjIcon','pjVideo','pjLink'].forEach(function(id){document.getElementById(id).value='';});
+  document.getElementById('pjIcon').value='';
+  fileInput.value='';statusEl.textContent='';
+  _projsCache={};
+  showToast('ok','✅','Project সফলভাবে যোগ হয়েছে!');
+  renderAdminProjects();
+  renderProjectsGrid();
+}
+
+async function deleteProject(id){
+  if(!confirm('এই project delete করবেন?'))return;
+  await sb.from('projects').delete().eq('id',id);
+  delete _projsCache[id];
+  renderAdminProjects();
+  renderProjectsGrid();
 }
 
 // ====== DASHBOARD ======
@@ -676,6 +823,7 @@ function animCount(id,target,suffix,dur){var el=document.getElementById(id),v=0,
 // ====== SITE INIT ======
 function initSite(){
   applySettings();
+  renderProjectsGrid();
   renderVideoGrid();
   renderExclusive();
   renderBookingSection();
