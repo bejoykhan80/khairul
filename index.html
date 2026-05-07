@@ -47,6 +47,21 @@
   </div>
 </div>
 
+<!-- ======= BLOG MODAL ======= -->
+<div class="overlay" id="blogOverlay" style="display:none;" onclick="if(event.target===this)closeBlog()">
+  <div class="blog-modal">
+    <div class="blog-modal-head">
+      <div>
+        <div class="blog-modal-cat" id="bmCat"></div>
+        <div class="blog-modal-title" id="bmTitle"></div>
+        <div class="blog-modal-meta" id="bmMeta"></div>
+      </div>
+      <button class="close-btn" onclick="closeBlog()">✕</button>
+    </div>
+    <div class="blog-modal-body" id="bmBody"></div>
+  </div>
+</div>
+
 <!-- ======= ADMIN MODAL ======= -->
 <div class="overlay" id="adminOverlay" style="display:none;">
   <div class="admin-box">
@@ -491,14 +506,14 @@
 <div class="sec" style="padding-top:0;">
   <div class="sec-hd"><div class="sec-tag">Blog</div><div class="sec-line"></div><div class="sec-num">16</div></div>
   <div class="blogs">
-    <div class="blog"><div class="blog-img b1">📝</div><div class="blog-body"><div class="blog-cat">Ethical Hacking</div><div class="blog-title">SQL Injection কী এবং কীভাবে ঠেকাবেন?</div><div class="blog-meta">15 Apr 2026 · 8 min</div><div class="blog-read">পড়ুন ↗</div></div></div>
-    <div class="blog"><div class="blog-img b2">🔧</div><div class="blog-body"><div class="blog-cat">Tools</div><div class="blog-title">Nmap দিয়ে Network Scanning শুরু করুন</div><div class="blog-meta">02 Apr 2026 · 10 min</div><div class="blog-read">পড়ুন ↗</div></div></div>
-    <div class="blog"><div class="blog-img b3">🏆</div><div class="blog-body"><div class="blog-cat">CTF</div><div class="blog-title">CTF-এ Beginners কীভাবে শুরু করবেন</div><div class="blog-meta">20 Mar 2026 · 6 min</div><div class="blog-read">পড়ুন ↗</div></div></div>
-    <div class="blog"><div class="blog-img b4">🔒</div><div class="blog-body"><div class="blog-cat">Security</div><div class="blog-title">OWASP Top 10 — ২০২৬ আপডেট</div><div class="blog-meta">05 Mar 2026 · 12 min</div><div class="blog-read">পড়ুন ↗</div></div></div>
-    <div class="blog"><div class="blog-img b1">🕷️</div><div class="blog-body"><div class="blog-cat">Web Security</div><div class="blog-title">XSS Attack কী? কীভাবে ওয়েবসাইট সুরক্ষিত রাখবেন</div><div class="blog-meta">28 Apr 2026 · 9 min</div><div class="blog-read">পড়ুন ↗</div></div></div>
-    <div class="blog"><div class="blog-img b2">🐛</div><div class="blog-body"><div class="blog-cat">Bug Bounty</div><div class="blog-title">Bug Bounty শুরু করার সম্পূর্ণ গাইড — ২০২৬</div><div class="blog-meta">22 Apr 2026 · 15 min</div><div class="blog-read">পড়ুন ↗</div></div></div>
-    <div class="blog"><div class="blog-img b3">🐧</div><div class="blog-body"><div class="blog-cat">Linux</div><div class="blog-title">Penetration Testing-এর জন্য Linux কমান্ড — Top 30</div><div class="blog-meta">10 Apr 2026 · 11 min</div><div class="blog-read">পড়ুন ↗</div></div></div>
-    <div class="blog"><div class="blog-img b4">🎭</div><div class="blog-body"><div class="blog-cat">Social Engineering</div><div class="blog-title">Phishing Attack চেনার উপায় ও প্রতিরোধ</div><div class="blog-meta">01 Apr 2026 · 7 min</div><div class="blog-read">পড়ুন ↗</div></div></div>
+    <div class="blog" onclick="openBlog(0)"><div class="blog-img b1">📝</div><div class="blog-body"><div class="blog-cat">Ethical Hacking</div><div class="blog-title">SQL Injection কী এবং কীভাবে ঠেকাবেন?</div><div class="blog-meta">15 Apr 2026 · 8 min</div><div class="blog-read">পড়ুন ↗</div></div></div>
+    <div class="blog" onclick="openBlog(1)"><div class="blog-img b2">🔧</div><div class="blog-body"><div class="blog-cat">Tools</div><div class="blog-title">Nmap দিয়ে Network Scanning শুরু করুন</div><div class="blog-meta">02 Apr 2026 · 10 min</div><div class="blog-read">পড়ুন ↗</div></div></div>
+    <div class="blog" onclick="openBlog(2)"><div class="blog-img b3">🏆</div><div class="blog-body"><div class="blog-cat">CTF</div><div class="blog-title">CTF-এ Beginners কীভাবে শুরু করবেন</div><div class="blog-meta">20 Mar 2026 · 6 min</div><div class="blog-read">পড়ুন ↗</div></div></div>
+    <div class="blog" onclick="openBlog(3)"><div class="blog-img b4">🔒</div><div class="blog-body"><div class="blog-cat">Security</div><div class="blog-title">OWASP Top 10 — ২০২৬ আপডেট</div><div class="blog-meta">05 Mar 2026 · 12 min</div><div class="blog-read">পড়ুন ↗</div></div></div>
+    <div class="blog" onclick="openBlog(4)"><div class="blog-img b1">🕷️</div><div class="blog-body"><div class="blog-cat">Web Security</div><div class="blog-title">XSS Attack কী? কীভাবে ওয়েবসাইট সুরক্ষিত রাখবেন</div><div class="blog-meta">28 Apr 2026 · 9 min</div><div class="blog-read">পড়ুন ↗</div></div></div>
+    <div class="blog" onclick="openBlog(5)"><div class="blog-img b2">🐛</div><div class="blog-body"><div class="blog-cat">Bug Bounty</div><div class="blog-title">Bug Bounty শুরু করার সম্পূর্ণ গাইড — ২০২৬</div><div class="blog-meta">22 Apr 2026 · 15 min</div><div class="blog-read">পড়ুন ↗</div></div></div>
+    <div class="blog" onclick="openBlog(6)"><div class="blog-img b3">🐧</div><div class="blog-body"><div class="blog-cat">Linux</div><div class="blog-title">Penetration Testing-এর জন্য Linux কমান্ড — Top 30</div><div class="blog-meta">10 Apr 2026 · 11 min</div><div class="blog-read">পড়ুন ↗</div></div></div>
+    <div class="blog" onclick="openBlog(7)"><div class="blog-img b4">🎭</div><div class="blog-body"><div class="blog-cat">Social Engineering</div><div class="blog-title">Phishing Attack চেনার উপায় ও প্রতিরোধ</div><div class="blog-meta">01 Apr 2026 · 7 min</div><div class="blog-read">পড়ুন ↗</div></div></div>
   </div>
 </div>
 
